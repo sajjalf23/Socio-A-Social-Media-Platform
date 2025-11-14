@@ -1,0 +1,206 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Socio</title>
+
+    <!-- Bootstrap -->
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" /> 
+    
+
+    @RenderSection("Styles", required: false)
+
+    @* <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/socio.styles.css" asp-append-version="true" /> *@
+
+    <style>
+        body {
+            background-color: #fff;
+            margin: 0;
+            display: flex;
+            flex-direction: row;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        }
+
+        /* Desktop Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: #fff;
+            border-right: 1px solid #dbdbdb;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px 15px;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .sidebar img.logo {
+            width: 120px;
+            align-self: center;
+            margin: 20px 0;
+        }
+
+        .sidebar .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .sidebar .nav-links a {
+            text-decoration: none;
+            color: #262626;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 17px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            transition: background-color 0.2s, padding-left 0.2s;
+        }
+
+        .sidebar .nav-links a:hover {
+            background-color: #f1f1f1;
+            padding-left: 15px;
+        }
+
+        /* Main content */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 20px 10px;
+        }
+
+        /* Mobile Topbar & Bottom Navbar */
+        .mobile-topbar,
+        .bottom-navbar {
+            display: none;
+        }
+
+        @@media(max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .mobile-topbar,
+            .bottom-navbar {
+                display: flex;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 40px 20px;
+            }
+            @* padding: 80px 15px 70px; *@
+                /* bottom padding = height of navbar */
+
+            /* Bottom navbar fixed */
+            .bottom-navbar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                background-color: #fff;
+                border-top: 1px solid #dbdbdb;
+                justify-content: space-around;
+                align-items: center;
+                padding: 10px 0;
+                z-index: 1000;
+            }
+
+            /* Bottom navbar icons black */
+            .bottom-navbar a {
+                color: #262626;
+                /* Instagram-style black */
+                font-size: 24px;
+                /* optional, keeps icons nicely sized */
+            }
+
+            .bottom-navbar a:hover {
+                color: #000;
+                /* optional, slightly darker on hover */
+            }
+
+            /* Remove underline and default focus outline */
+            .bottom-navbar a,
+            .mobile-topbar button {
+                text-decoration: none;
+                /* remove underline */
+                color: #262626;
+                /* black color */
+            }
+
+            .bottom-navbar a:focus,
+            .bottom-navbar a:hover,
+            .mobile-topbar button:focus,
+            .mobile-topbar button:hover {
+                text-decoration: none;
+                outline: none;
+                /* remove focus border */
+                color: #262626;
+                /* ensure black on hover */
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+
+
+
+    <!-- Desktop Sidebar -->
+    <div class="sidebar d-none d-md-flex flex-column">
+        <div>
+            <a href="@Url.Action("Index", "Home")">
+            <img src="~/images/landing-logo-img.png" alt="Logo" class="logo" />
+            </a>
+            <div class="nav-links">
+                <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-fill"></i> Home</a>
+                <a asp-controller="Post" asp-action="Create"><i class="bi bi-plus-circle"></i> Create</a>
+                <a asp-controller="Profile" asp-action="Index"><i class="bi bi-person-circle"></i> Profile</a>
+            </div>
+        </div>
+        <div class="nav-links mt-3">
+            <a asp-controller="Account" asp-action="Logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </div>
+    </div>
+
+    <!-- Mobile Topbar -->
+    <div class="mobile-topbar d-flex d-md-none justify-content-between align-items-center p-2 border-bottom">
+        <a href="@Url.Action("Index", "Home")">
+        <img src="~/images/landing-logo-img.png" alt="Logo" height="35" /></a>
+        <button class="btn btn-link text-dark" asp-controller="Account" asp-action="Logout">
+            <i class="bi bi-box-arrow-right"></i> Logout
+        </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        @RenderBody()
+    </div>
+
+    <!-- Mobile Bottom Navbar -->
+    <div class="bottom-navbar d-flex d-md-none justify-content-around align-items-center border-top">
+        <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-fill"></i></a>
+        <a asp-controller="Post" asp-action="Create"><i class="bi bi-plus-circle"></i></a>
+        <a asp-controller="Profile" asp-action="Index"><i class="bi bi-person-circle"></i></a>
+    </div>
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>

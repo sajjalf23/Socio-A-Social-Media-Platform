@@ -1,0 +1,83 @@
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "All Users";
+
+    var users = new List<dynamic> {
+        new { Id = 1, Username = "john_doe", ProfileImage = "~/images/profile.png", PostCount = 12 },
+        new { Id = 2, Username = "sara_khan", ProfileImage = "~/images/profile.png", PostCount = 8 },
+        new { Id = 3, Username = "ali_ahmed", ProfileImage = "~/images/profile.png", PostCount = 5 },
+        new { Id = 1, Username = "john_doe", ProfileImage = "~/images/profile.png", PostCount = 12 },
+        new { Id = 2, Username = "sara_khan", ProfileImage = "~/images/profile.png", PostCount = 8 },
+        new { Id = 3, Username = "ali_ahmed", ProfileImage = "~/images/profile.png", PostCount = 5 },
+        new { Id = 2, Username = "sara_khan", ProfileImage = "~/images/profile.png", PostCount = 8 },
+        new { Id = 3, Username = "ali_ahmed", ProfileImage = "~/images/profile.png", PostCount = 5 },
+        new { Id = 1, Username = "john_doe", ProfileImage = "~/images/profile.png", PostCount = 12 },
+        new { Id = 2, Username = "sara_khan", ProfileImage = "~/images/profile.png", PostCount = 8 },
+        new { Id = 3, Username = "ali_ahmed", ProfileImage = "~/images/profile.png", PostCount = 5 },
+        new { Id = 1, Username = "john_doe", ProfileImage = "~/images/profile.png", PostCount = 12 },
+        new { Id = 2, Username = "sara_khan", ProfileImage = "~/images/profile.png", PostCount = 8 },
+        new { Id = 3, Username = "ali_ahmed", ProfileImage = "~/images/profile.png", PostCount = 5 }
+    };
+}
+
+@section Styles {
+    <style>
+        .users-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .user-card:hover {
+            background-color: #f8f8f8;
+        }
+
+        .user-card img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ccc;
+        }
+
+        .user-info h4 {
+            font-size: 17px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .user-info p {
+            font-size: 14px;
+            color: #666;
+            margin: 3px 0 0;
+        }
+    </style>
+}
+
+<div class="users-container">
+    @foreach (var user in users)
+    {
+        <a href="@Url.Action("Profile", "AdminUsers", new { id = user.Id })" class="user-card">
+            <img src="@Url.Content(user.ProfileImage)" alt="@user.Username" />
+            <div class="user-info">
+                <h4>@user.Username</h4>
+                <p>@user.PostCount posts</p>
+            </div>
+        </a>
+    }
+</div>

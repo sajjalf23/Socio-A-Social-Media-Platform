@@ -1,0 +1,153 @@
+@{
+    ViewData["Title"] = "Edit Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var profile = ViewData["Profile"];
+    var fullname = profile?.GetType().GetProperty("FullName")?.GetValue(profile, null) ?? "";
+    var username = profile?.GetType().GetProperty("Username")?.GetValue(profile, null) ?? "";
+    var bio = profile?.GetType().GetProperty("Bio")?.GetValue(profile, null) ?? "";
+    var location = profile?.GetType().GetProperty("Location")?.GetValue(profile, null) ?? "";
+    var website = profile?.GetType().GetProperty("Website")?.GetValue(profile, null) ?? "";
+    var profileImage = profile?.GetType().GetProperty("ProfileImageUrl")?.GetValue(profile, null) ?? "~/images/profile.png";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+
+<style>
+    .edit-container {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        @* padding: 40px 0; *@
+    }
+
+    .edit-card {
+        width: 450px;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        padding: 25px;
+        text-align: center;
+    }
+
+    .edit-card h2 {
+        font-size: 22px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #262626;
+    }
+
+    .profile-photo {
+        position: relative;
+        margin-bottom: 15px;
+    }
+
+    .profile-photo img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #dbdbdb;
+    }
+
+    .change-photo-btn {
+        display: inline-block;
+        margin-top: 10px;
+        color: #0095f6;
+        background: none;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .change-photo-btn:hover {
+        text-decoration: underline;
+    }
+
+    input[type="text"],
+    textarea {
+        width: 100%;
+        border: 1px solid #dbdbdb;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 15px;
+        outline: none;
+        margin-bottom: 15px;
+    }
+
+    textarea {
+        resize: none;
+        height: 80px;
+    }
+
+    .update-btn {
+        background-color: #0095f6;
+        color: #fff;
+        border: none;
+        width: 100%;
+        padding: 10px;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .update-btn:hover {
+        background-color: #007acc;
+    }
+
+    @@media(max-width: 768px) {
+        .edit-container {
+            /* @* padding: 20px; *@ */
+        }
+
+        .edit-card {
+            width: 100%;
+        }
+    }
+
+</style>
+
+<div class="edit-container">
+    <div class="edit-card">
+        <h2>Edit Profile</h2>
+
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            <div class="profile-photo">
+                <img id="profileImage" src="@Url.Content(profileImage.ToString())" alt="Profile Photo">
+                <input type="file" id="imageInput" name="ProfileImage" hidden>
+                <button type="button" class="change-photo-btn" id="changePhotoBtn">Change Profile Photo</button>
+            </div>
+
+            <input type="text" name="FullName" value="@fullname" placeholder="Full Name">
+            <input type="text" name="Username" value="@username" placeholder="Username">
+            <textarea name="Bio" placeholder="Bio">@bio</textarea>
+            <input type="text" name="Location" value="@location" placeholder="Location">
+
+            <button type="submit" class="update-btn">Update Profile</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const changePhotoBtn = document.getElementById('changePhotoBtn');
+        const imageInput = document.getElementById('imageInput');
+        const profileImage = document.getElementById('profileImage');
+
+        changePhotoBtn.addEventListener('click', () => imageInput.click());
+        imageInput.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => profileImage.src = e.target.result;
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+}

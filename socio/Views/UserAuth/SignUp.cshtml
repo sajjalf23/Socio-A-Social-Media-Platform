@@ -1,0 +1,105 @@
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socio Sign Up</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ffffff;
+        }
+        .signup-card {
+            width: 950px;
+            max-width: 95%;
+            display: flex;
+            background-color: #ffffff;
+            flex-wrap: wrap;
+        }
+        .signup-image {
+            flex: 1.5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .signup-image img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+        .signup-form {
+            flex: 1;
+            padding: 50px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .signup-form input {
+            margin-bottom: 15px;
+            background-color: #fafafa;
+            border: 1px solid #dbdbdb;
+            height: 35px;
+            font-size: 16px;
+            padding: 0 15px;
+        }
+        .signup-form .btn {
+            background-color: #0095f6;
+            color: #fff;
+            height: 40px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .login-link-text {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .login-link-text a {
+            text-decoration: none;
+            color: #0095f6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="signup-card">
+        <div class="signup-image d-none d-md-flex">
+            <img src="@Url.Content("~/images/landing-page-img.png")" alt="Sign Up Image">
+        </div>
+
+        <div class="signup-form">
+            <div class="text-center mb-3">
+                <img src="@Url.Content("~/images/landing-logo-img.png")" alt="Socio Logo" style="height:50px; width:auto;">
+            </div>
+
+            <form method="post">
+                <input type="text" name="fullName" class="form-control" placeholder="Full Name" required />
+                <input type="text" name="username" class="form-control" placeholder="Username" required />
+                <input type="email" name="email" class="form-control" placeholder="Email" required />
+                <input type="password" name="password" class="form-control" placeholder="Password" required />
+                <button type="submit" class="btn w-100">Sign Up</button>
+
+                @if (ViewBag.Message != null)
+                {
+                    <div class="text-success text-center mt-3">@ViewBag.Message</div>
+                }
+            </form>
+
+            <div class="login-link-text">
+                Already have an account? <a asp-action="Login" asp-controller="UserAuth">Log In</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

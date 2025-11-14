@@ -1,0 +1,252 @@
+@{
+    ViewData["Title"] = "Create Post";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+
+<style>
+    .create-container {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        @* padding: 40px 0; *@
+    }
+
+    .create-card {
+        width: 420px;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        padding: 20px;
+        text-align: center;
+    }
+
+    .create-card h2 {
+        font-size: 22px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #262626;
+    }
+
+    .upload-area {
+        border: 2px dashed #dbdbdb;
+        border-radius: 10px;
+        padding: 25px 15px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        transition: border-color 0.2s;
+    }
+
+    .upload-area:hover {
+        border-color: #0095f6;
+    }
+
+    .upload-area i {
+        font-size: 40px;
+        color: #8e8e8e;
+        margin-bottom: 10px;
+    }
+
+    .upload-area p {
+        margin: 0;
+        color: #8e8e8e;
+        font-size: 15px;
+    }
+
+    .preview-image {
+        width: 100%;
+        max-height: 250px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        display: none;
+    }
+
+    textarea,
+    input[type="text"] {
+        width: 100%;
+        border: 1px solid #dbdbdb;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 15px;
+        outline: none;
+        margin-bottom: 15px;
+    }
+
+    textarea {
+        resize: none;
+        height: 70px;
+    }
+
+    .tags-input {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        border: 1px solid #dbdbdb;
+        border-radius: 8px;
+        padding: 8px;
+        min-height: 46px;
+        cursor: text;
+        margin-bottom: 20px;
+    }
+
+    .tags-input input {
+        border: none;
+        outline: none;
+        flex: 1;
+        font-size: 14px;
+        min-width: 100px;
+    }
+
+    .tag {
+        background-color: #e0f1ff;
+        color: #007acc;
+        border-radius: 20px;
+        padding: 5px 10px;
+        margin: 4px;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .tag i {
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .location-field {
+        position: relative;
+        margin-bottom: 15px;
+    }
+
+    .location-field i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-45%);
+        color: #8e8e8e;
+        font-size: 16px;
+    }
+
+    .location-field input {
+        padding-left: 35px;
+    }
+
+    .post-btn {
+        background-color: #0095f6;
+        color: #fff;
+        border: none;
+        width: 100%;
+        padding: 10px;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .post-btn:hover {
+        background-color: #007acc;
+    }
+
+    @@media (max-width: 768px) {
+        .create-container {
+            @* padding: 20px; *@
+        }
+
+        .create-card {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="create-container">
+    <div class="create-card">
+        <h2>Create a New Post</h2>
+
+        <form asp-action="Create" asp-controller="Post" method="post" enctype="multipart/form-data">
+            <div class="upload-area" id="uploadArea">
+                <i class="bi bi-image"></i>
+                <p>Click to upload image</p>
+                <input type="file" accept="image/*" hidden id="imageInput" name="image">
+            </div>
+
+            <img id="previewImage" class="preview-image" alt="Preview" />
+
+            <textarea name="caption" placeholder="Write a caption..." id="captionInput"></textarea>
+
+            <div class="location-field">
+                <input type="text" name="location" placeholder="Add location..." id="locationInput">
+            </div>
+
+            <div class="tags-input" id="tagsInput">
+                <input type="text" id="tagField" placeholder="Add tags... (press Enter)">
+            </div>
+
+            <button type="submit" class="post-btn" id="postButton">Post</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const uploadArea = document.getElementById('uploadArea');
+    const imageInput = document.getElementById('imageInput');
+    const previewImage = document.getElementById('previewImage');
+    const captionInput = document.getElementById('captionInput');
+    const locationInput = document.getElementById('locationInput');
+    const tagField = document.getElementById('tagField');
+    const tagsInput = document.getElementById('tagsInput');
+
+    let tags = [];
+
+    uploadArea.addEventListener('click', () => imageInput.click());
+    imageInput.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+                uploadArea.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    tagField.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            const tag = tagField.value.trim().replace(/,/g, '');
+            if (tag && !tags.includes(tag)) {
+                tags.push(tag);
+                renderTags();
+            }
+            tagField.value = '';
+        }
+    });
+
+    function renderTags() {
+        tagsInput.querySelectorAll('.tag').forEach(el => el.remove());
+        tags.forEach(tag => {
+            const span = document.createElement('span');
+            span.className = 'tag';
+            span.innerHTML = `#${tag} <i class="bi bi-x" data-tag="${tag}"></i>`;
+            tagsInput.insertBefore(span, tagField);
+        });
+    }
+
+    tagsInput.addEventListener('click', e => {
+        if (e.target.matches('.bi-x')) {
+            const tagToRemove = e.target.getAttribute('data-tag');
+            tags = tags.filter(t => t !== tagToRemove);
+            renderTags();
+        }
+        tagField.focus();
+    });
+</script>
+}

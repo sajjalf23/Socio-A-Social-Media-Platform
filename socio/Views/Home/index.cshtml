@@ -1,0 +1,174 @@
+@{
+    ViewData["Title"] = "Socio Feed";
+    var posts = ViewData["Posts"] as List<dynamic>;
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" /> 
+
+<style>
+    body {
+        background-color: #fff;
+        margin: 0;
+        display: flex;
+        flex-direction: row;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    .feed {
+        margin-left: 250px;
+        flex: 1;
+        overflow-y: auto;
+        max-width: 650px;
+        margin-inline: auto;
+        padding: 20px 0;
+    }
+
+    .post { margin-bottom: 60px; background-color: #fff; padding: 15px; }
+    .post-header { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; }
+    .post-header img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+    .post-header .username { font-weight: 600; font-size: 15px; }
+    .post-header .time { color: #8e8e8e; font-size: 14px; }
+    .post-image { width: 100%; height: auto; border-radius: 6px; margin-bottom: 10px; }
+    .post-actions { display: flex; align-items: center; gap: 15px; font-size: 22px; color: #262626; cursor: pointer; margin-bottom: 8px; }
+    .likes-count { font-weight: 600; font-size: 15px; margin-bottom: 8px; }
+    .post-content { font-size: 15px; margin-bottom: 10px; }
+    .comments { max-height: 200px; overflow-y: auto; margin-bottom: 5px; }
+    .comment { font-size: 14px; margin-bottom: 3px; }
+    .comment strong { font-weight: 600; margin-right: 5px; }
+    .add-comment { display: flex; align-items: center; gap: 10px; border-top: 1px solid #eee; padding-top: 10px; }
+    .add-comment input { border: none; flex: 1; outline: none; background: none; font-size: 14px; padding: 5px; }
+    .add-comment button { border: none; background: none; color: #0095f6; font-weight: 600; cursor: pointer; }
+
+    @@media(max-width: 768px) {
+        body { flex-direction: column; }
+        .feed { margin-left: 0; padding: 0 10px; }
+    }
+</style>
+
+<div class="feed">
+    @for (int i = 0; i < posts?.Count; i++)
+    {
+        var post = posts[i];
+        <div class="post" data-index="@i" data-likes="@post.Likes">
+            <div class="post-header">
+                <img src="@Url.Content(post.ProfileImage)" alt="Profile" />
+                <div>
+                    <p class="username mb-0">@post.Username <span class="time">• @post.TimeAgo</span></p>
+                </div>
+            </div>
+
+            <img src="@Url.Content(post.PostImage)" alt="Post Image" class="post-image" />
+
+            <div class="post-actions">
+                <i class="bi bi-heart like-btn"></i>
+                <i class="bi bi-hand-thumbs-down dislike-btn"></i>
+                <i class="bi bi-chat"></i>
+            </div>
+
+            <p class="likes-count">@post.Likes likes</p>
+
+            <div class="post-content">
+                <p><strong>@post.Username</strong> @post.Content</p>
+            </div>
+
+            <div class="comments">
+                @foreach (var comment in post.Comments)
+                {
+                    <p class="comment"><strong>@comment.Username</strong> @comment.Text</p>
+                }
+            </div>
+
+            <div class="add-comment">
+                <input type="text" placeholder="Add a comment..." />
+                <button class="post-comment-btn">Post</button>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    function escapeHtml(unsafe) {
+        return unsafe.replace(/[&<>"'/]/g, m => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;',
+            '/': '&#x2F;'
+        }[m]));
+    }
+
+    // Handle likes/dislikes using event delegation
+    document.querySelectorAll('.post').forEach(post => {
+        let likes = parseInt(post.dataset.likes);
+        let liked = false, disliked = false;
+
+        const likeBtn = post.querySelector('.like-btn');
+        const dislikeBtn = post.querySelector('.dislike-btn');
+        const likesCountEl = post.querySelector('.likes-count');
+
+        likeBtn.addEventListener('click', () => {
+            if (!liked) {
+                likes++;
+                likeBtn.classList.replace('bi-heart', 'bi-heart-fill');
+                likeBtn.style.color = '#e0245e';
+                if (disliked) {
+                    disliked = false;
+                    dislikeBtn.classList.replace('bi-hand-thumbs-down-fill', 'bi-hand-thumbs-down');
+                    likes++;
+                }
+                liked = true;
+            } else {
+                likes--;
+                likeBtn.classList.replace('bi-heart-fill', 'bi-heart');
+                likeBtn.style.color = '#262626';
+                liked = false;
+            }
+            likesCountEl.textContent = likes + ' likes';
+        });
+
+        dislikeBtn.addEventListener('click', () => {
+            if (!disliked) {
+                likes--;
+                dislikeBtn.classList.replace('bi-hand-thumbs-down', 'bi-hand-thumbs-down-fill');
+                dislikeBtn.style.color = '#1e90ff';
+                if (liked) {
+                    liked = false;
+                    likeBtn.classList.replace('bi-heart-fill', 'bi-heart');
+                    likeBtn.style.color = '#262626';
+                    likes--;
+                }
+                disliked = true;
+            } else {
+                likes++;
+                dislikeBtn.classList.replace('bi-hand-thumbs-down-fill', 'bi-hand-thumbs-down');
+                dislikeBtn.style.color = '#262626';
+                disliked = false;
+            }
+            likesCountEl.textContent = likes + ' likes';
+        });
+
+        const commentBtn = post.querySelector('.post-comment-btn');
+        const commentInput = post.querySelector('input');
+        const commentsDiv = post.querySelector('.comments');
+
+        commentBtn.addEventListener('click', () => {
+            const text = commentInput.value.trim();
+            if (text) {
+                const newComment = document.createElement('p');
+                newComment.classList.add('comment');
+                newComment.innerHTML = `<strong>you</strong> ${escapeHtml(text)}`;
+                commentsDiv.appendChild(newComment);
+                commentInput.value = '';
+                commentsDiv.scrollTop = commentsDiv.scrollHeight;
+            }
+        });
+    });
+
+});
+</script>
+}

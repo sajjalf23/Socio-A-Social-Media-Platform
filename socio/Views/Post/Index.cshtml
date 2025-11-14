@@ -1,0 +1,258 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    dynamic post = ViewData["Post"];
+    string currentUser = ViewData["CurrentUser"] as string ?? "";
+}
+
+<style>
+    .post-container {
+        max-width: 650px;
+        margin: 20px auto;
+        display: flex;
+        flex-direction: column;
+        background-color: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        padding: 10px;
+    }
+
+    .post-image img {
+        width: 100%;
+        max-height: 600px;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+
+    .post-details {
+        padding: 15px 0;
+    }
+
+    .post-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .post-header img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .post-username {
+        font-weight: 600;
+    }
+
+    .time-ago {
+        font-size: 13px;
+        color: #8e8e8e;
+    }
+
+    .post-caption {
+        margin: 10px 0;
+        font-size: 15px;
+    }
+
+    .comments {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .comment {
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+
+    .comment strong {
+        font-weight: 600;
+        margin-right: 5px;
+    }
+
+    .post-actions {
+        display: flex;
+        gap: 15px;
+        font-size: 22px;
+        margin-bottom: 8px;
+        cursor: pointer;
+    }
+
+    .likes-count {
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+    .add-comment {
+        display: flex;
+        gap: 10px;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+    }
+
+    .add-comment input {
+        flex: 1;
+        border: none;
+        outline: none;
+        padding: 6px;
+        font-size: 14px;
+    }
+
+    .add-comment button {
+        border: none;
+        background: none;
+        color: #0095f6;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .delete-btn {
+        margin-top: 10px;
+        background-color: #000;
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .delete-btn:hover {
+        background-color: #333;
+    }
+
+    @@media(max-width: 768px) {
+        .post-container {
+            margin: 20px 10px;
+        }
+
+        .post-image img {
+            max-height: 400px;
+        }
+    }
+</style>
+
+<div class="post-container">
+    <div class="post-image">
+        <img src="@Url.Content(post.PostImage)" alt="Post Image" />
+    </div>
+
+    <div class="post-details">
+        <div class="post-header">
+            <img src="@Url.Content(post.ProfileImage)" alt="Profile" />
+            <div>
+                <div class="post-username">@post.Username</div>
+                <div class="time-ago">@post.TimeAgo</div>
+            </div>
+        </div>
+
+        <div class="post-caption"><strong>@post.Username</strong> @post.Content</div>
+
+        <div class="post-actions">
+            <i class="bi bi-heart" id="likeBtn" title="Like"></i>
+            <i class="bi bi-hand-thumbs-down" id="dislikeBtn" title="Dislike"></i>
+            <i class="bi bi-chat"></i>
+        </div>
+
+        <div class="likes-count" id="likesCount">@post.Likes likes</div>
+
+
+
+        <div class="comments" id="commentsSection">
+            @foreach (var c in post.Comments)
+            {
+                <div class="comment"><strong>@c.Username</strong> @c.Text</div>
+            }
+        </div>
+
+        <div class="add-comment">
+            <input type="text" id="commentInput" placeholder="Add a comment..." />
+            <button id="postBtn">Post</button>
+        </div>
+
+        @if (post.Username == currentUser)
+        {
+            <form method="post" asp-action="DeletePost" asp-route-id="@post.Id">
+                <button type="submit" class="delete-btn" style="padding: 6px 15px; ">Delete Post</button>
+            </form>
+        }
+    </div>
+</div>
+
+<script>
+    const postBtn = document.getElementById('postBtn');
+    const input = document.getElementById('commentInput');
+    const commentsSection = document.getElementById('commentsSection');
+    const likesCountEl = document.getElementById('likesCount');
+    const likeBtn = document.getElementById('likeBtn');
+    const dislikeBtn = document.getElementById('dislikeBtn');
+
+    let liked = false;
+    let disliked = false;
+    let likes = parseInt("@post.Likes");
+
+    function escapeHtml(unsafe) {
+        return unsafe.replace(/[&<>"'/]/g, m => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;", "/": "&#x2F;"}[m]));
+    }
+
+    function postComment() {
+        const text = input.value.trim();
+        if (!text) return;
+        const div = document.createElement('div');
+        div.className = 'comment';
+        div.innerHTML = `<strong>you</strong> ${escapeHtml(text)}`;
+        commentsSection.appendChild(div);
+        input.value = '';
+        commentsSection.scrollTop = commentsSection.scrollHeight;
+    }
+
+    postBtn.addEventListener('click', postComment);
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            postComment();
+        }
+    });
+
+    likeBtn.addEventListener('click', () => {
+        if (!liked) {
+            likes++;
+            likeBtn.classList.replace('bi-heart', 'bi-heart-fill');
+            likeBtn.style.color = '#e0245e';
+            if (disliked) {
+                disliked = false;
+                dislikeBtn.classList.replace('bi-hand-thumbs-down-fill', 'bi-hand-thumbs-down');
+                likes++;
+            }
+            liked = true;
+        } else {
+            likes--;
+            likeBtn.classList.replace('bi-heart-fill', 'bi-heart');
+            likeBtn.style.color = '#262626';
+            liked = false;
+        }
+        likesCountEl.textContent = `${likes} likes`;
+    });
+
+    dislikeBtn.addEventListener('click', () => {
+        if (!disliked) {
+            likes--;
+            dislikeBtn.classList.replace('bi-hand-thumbs-down', 'bi-hand-thumbs-down-fill');
+            dislikeBtn.style.color = '#1e90ff';
+            if (liked) {
+                liked = false;
+                likeBtn.classList.replace('bi-heart-fill', 'bi-heart');
+                likeBtn.style.color = '#262626';
+                likes--;
+            }
+            disliked = true;
+        } else {
+            likes++;
+            dislikeBtn.classList.replace('bi-hand-thumbs-down-fill', 'bi-hand-thumbs-down');
+            dislikeBtn.style.color = '#262626';
+            disliked = false;
+        }
+        likesCountEl.textContent = `${likes} likes`;
+    });
+</script>

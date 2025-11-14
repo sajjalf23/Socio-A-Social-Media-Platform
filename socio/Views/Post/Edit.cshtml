@@ -1,0 +1,261 @@
+@{
+    ViewData["Title"] = "Edit Post";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    dynamic post = ViewData["Post"]; // use dynamic
+}
+@* 
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" /> *@
+<link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+<link href="~/lib/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+<script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<style>
+    .edit-container {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        @* padding: 40px 0; *@
+    }
+
+    .edit-card {
+        width: 420px;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        padding: 20px;
+        text-align: center;
+    }
+
+    .edit-card h2 {
+        font-size: 22px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #262626;
+    }
+
+    .image-wrapper {
+        position: relative;
+        margin-bottom: 15px;
+    }
+
+    .image-wrapper img {
+        width: 100%;
+        border-radius: 8px;
+        max-height: 250px;
+        object-fit: cover;
+    }
+
+    .change-image-btn {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background-color: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .change-image-btn:hover {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+
+    textarea,
+    input[type="text"] {
+        width: 100%;
+        border: 1px solid #dbdbdb;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 15px;
+        outline: none;
+        margin-bottom: 15px;
+    }
+
+    textarea {
+        resize: none;
+        height: 70px;
+    }
+
+    .tags-input {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        border: 1px solid #dbdbdb;
+        border-radius: 8px;
+        padding: 8px;
+        min-height: 46px;
+        cursor: text;
+        margin-bottom: 20px;
+    }
+
+    .tags-input input {
+        border: none;
+        outline: none;
+        flex: 1;
+        font-size: 14px;
+        min-width: 100px;
+    }
+
+    .tag {
+        background-color: #e0f1ff;
+        color: #007acc;
+        border-radius: 20px;
+        padding: 5px 10px;
+        margin: 4px;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .tag i {
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .location-field {
+        position: relative;
+        margin-bottom: 15px;
+    }
+
+    .location-field i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-45%);
+        color: #8e8e8e;
+        font-size: 16px;
+    }
+
+    .location-field input {
+        padding-left: 35px;
+    }
+
+    .update-btn {
+        background-color: #0095f6;
+        color: #fff;
+        border: none;
+        width: 100%;
+        padding: 10px;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .update-btn:hover {
+        background-color: #007acc;
+    }
+
+    @@media(max-width: 768px) {
+        .edit-container {
+            @* padding: 20px; *@
+        }
+
+        .edit-card {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="edit-container">
+    <div class="edit-card">
+        <h2>Edit Post</h2>
+
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            <div class="image-wrapper">
+                <img id="previewImage" src="@Url.Content(post?.ImageUrl)" alt="Post Image">
+                <button type="button" class="change-image-btn" id="changeImageBtn">
+                    <i class="bi bi-camera"></i> Change Image
+                </button>
+                <input type="file" id="imageInput" name="image" accept="image/*" hidden>
+            </div>
+
+            <textarea name="caption">@post?.Caption</textarea>
+
+            <div class="location-field">
+                <i class="bi bi-geo-alt"></i>
+                <input type="text" name="location" value="@post.Location">
+            </div>
+
+            <div class="tags-input" id="tagsInput">
+                @foreach (var tag in post.Tags)
+                {
+                    <span class="tag">#@tag <i class="bi bi-x" data-tag="@tag"></i></span>
+                }
+                <input type="text" id="tagField" placeholder="Add tags... (press Enter)">
+            </div>
+
+            <input type="hidden" id="tagsInputHidden" name="tags" value="@string.Join(",", post.Tags)">
+
+            <button type="submit" class="update-btn" id="updateButton">Update Post</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const changeImageBtn = document.getElementById('changeImageBtn');
+        const imageInput = document.getElementById('imageInput');
+        const previewImage = document.getElementById('previewImage');
+        const tagField = document.getElementById('tagField');
+        const tagsInput = document.getElementById('tagsInput');
+        const tagsInputHidden = document.getElementById('tagsInputHidden');
+
+        let tags = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(post?.Tags));
+
+        changeImageBtn.addEventListener('click', () => imageInput.click());
+        imageInput.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => previewImage.src = e.target.result;
+                reader.readAsDataURL(file);
+            }
+        });
+
+        tagField.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                const tag = tagField.value.trim().replace(/,/g, '');
+                if (tag && !tags.includes(tag)) {
+                    tags.push(tag);
+                    renderTags();
+                }
+                tagField.value = '';
+            }
+        });
+
+        function renderTags() {
+            tagsInput.querySelectorAll('.tag').forEach(el => el.remove());
+            tags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'tag';
+                span.innerHTML = `#${tag} <i class="bi bi-x" data-tag="${tag}"></i>`;
+                tagsInput.insertBefore(span, tagField);
+            });
+        }
+
+        tagsInput.addEventListener('click', e => {
+            if (e.target.matches('.bi-x')) {
+                const tagToRemove = e.target.getAttribute('data-tag');
+                tags = tags.filter(t => t !== tagToRemove);
+                renderTags();
+            }
+            tagField.focus();
+        });
+
+        document.querySelector('form').addEventListener('submit', () => {
+            tagsInputHidden.value = tags.join(',');
+        });
+
+        renderTags();
+    </script>
+}
