@@ -168,6 +168,7 @@
                 <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-fill"></i> Home</a>
                 <a asp-controller="Post" asp-action="Create"><i class="bi bi-plus-circle"></i> Create</a>
                 <a asp-controller="Profile" asp-action="Index"><i class="bi bi-person-circle"></i> Profile</a>
+                <a asp-controller="Search" asp-action="Index"><i class="bi bi-search"></i> Search </a>
             </div>
         </div>
         <div class="nav-links mt-3">
@@ -189,12 +190,14 @@
         @RenderBody()
     </div>
 
-    <!-- Mobile Bottom Navbar -->
-    <div class="bottom-navbar d-flex d-md-none justify-content-around align-items-center border-top">
-        <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-fill"></i></a>
-        <a asp-controller="Post" asp-action="Create"><i class="bi bi-plus-circle"></i></a>
-        <a asp-controller="Profile" asp-action="Index"><i class="bi bi-person-circle"></i></a>
-    </div>
+<!-- Mobile Bottom Navbar -->
+<div class="bottom-navbar d-flex d-md-none justify-content-around align-items-center border-top">
+    <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-fill"></i></a>
+    <a asp-controller="Post" asp-action="Create"><i class="bi bi-plus-circle"></i></a>
+    <a asp-controller="Profile" asp-action="Index"><i class="bi bi-person-circle"></i></a>
+    <a asp-controller="Search" asp-action="Index"><i class="bi bi-search"></i></a>
+</div>
+
 
     <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

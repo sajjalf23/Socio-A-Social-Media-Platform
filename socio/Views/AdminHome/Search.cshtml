@@ -1,24 +1,57 @@
 @{
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500;700&display=swap" rel="stylesheet">
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "All Users";
+    ViewData["Title"] = "Search Users";
 
     var users = new List<dynamic> {
-new { Id = 1, Username = "john_doe", ProfileImage = "~/images/profile.png", PostCount = 12 },
-new { Id = 2, Username = "sara_khan", ProfileImage = "~/images/profile.png", PostCount = 8 },
-new { Id = 3, Username = "ali_ahmed", ProfileImage = "~/images/profile.png", PostCount = 5 },
-new { Id = 4, Username = "mina_yusuf", ProfileImage = "~/images/profile.png", PostCount = 7 },
-new { Id = 5, Username = "khalid_ali", ProfileImage = "~/images/profile.png", PostCount = 9 },
-new { Id = 6, Username = "nina_ahmad", ProfileImage = "~/images/profile.png", PostCount = 6 }
-};
+        new { Id = 1, Username = "john_doe", ProfileImage = "~/images/profile.png", PostCount = 12 },
+        new { Id = 2, Username = "sara_khan", ProfileImage = "~/images/profile.png", PostCount = 8 },
+        new { Id = 3, Username = "ali_ahmed", ProfileImage = "~/images/profile.png", PostCount = 5 },
+        new { Id = 4, Username = "mina_yusuf", ProfileImage = "~/images/profile.png", PostCount = 7 },
+        new { Id = 5, Username = "khalid_ali", ProfileImage = "~/images/profile.png", PostCount = 9 },
+        new { Id = 6, Username = "nina_ahmad", ProfileImage = "~/images/profile.png", PostCount = 6 }
+    };
 }
 
 @section Styles {
     <style>
+        .search-heading {
+            text-align: center;
+            font-size: 30px;
+            font-weight: 600;
+            font-family: 'Roboto', sans-serif;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        .search-bar-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .search-bar-wrapper input[type="text"] {
+            width: 400px;
+            max-width: 90%;
+            padding: 8px 12px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .search-bar-wrapper button {
+            padding: 8px 12px;
+            margin-left: 5px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+            background-color: black;
+            color: white;
+            cursor: pointer;
+        }
         .users-container-wrapper {
             display: flex;
             justify-content: center;
-            margin-top: 30px;
+            margin-top: 20px;
             margin-bottom: 30px;
         }
 
@@ -122,22 +155,20 @@ new { Id = 6, Username = "nina_ahmad", ProfileImage = "~/images/profile.png", Po
             .user-actions {
                 margin-top: 8px;
             }
-        }
 
-        .users-heading {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 30px;
-            font-weight: 600;
-        }
-
-        .users-heading {
-            font-family: 'Roboto', sans-serif;
+            .search-bar-wrapper input[type="text"] {
+                width: 70%;
+            }
         }
     </style>
 }
+<div class="search-bar-wrapper">
+    <form method="get" asp-action="SearchResults" asp-controller="AdminHome">
+        <input type="text" name="query" placeholder="Search by username..." />
+        <button type="submit">Search</button>
+    </form>
+</div>
 
-<div class="users-heading">Users</div>
 
 <div class="users-container-wrapper">
     <div class="users-container">

@@ -1,0 +1,152 @@
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    dynamic post = ViewData["Post"];
+}
+
+<style>
+    .post-container {
+        max-width: 650px;
+        margin: 20px auto;
+        display: flex;
+        flex-direction: column;
+        background-color: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        padding: 10px;
+    }
+
+    .post-image img {
+        width: 100%;
+        max-height: 600px;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+
+    .post-details {
+        padding: 15px 0;
+    }
+
+    .post-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .post-header img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .post-username {
+        font-weight: 600;
+    }
+
+    .time-ago {
+        font-size: 13px;
+        color: #8e8e8e;
+    }
+
+    .post-caption {
+        margin: 10px 0;
+        font-size: 15px;
+    }
+
+    .comments {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .comment {
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+
+    .comment strong {
+        font-weight: 600;
+        margin-right: 5px;
+    }
+
+    .likes-count {
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+    .delete-btn {
+        margin-top: 10px;
+        background-color: #000;
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .delete-btn:hover {
+        background-color: #333;
+    }
+
+    @@media(max-width: 768px) {
+        .post-container {
+            margin: 20px 10px;
+        }
+
+        .post-image img {
+            max-height: 400px;
+        }
+    }
+    .userfunc {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 15px; 
+}
+.userfunc .delete-btn {
+    padding: 6px 15px;
+}
+
+</style>
+
+<div class="post-container">
+    <div class="post-image">
+        <img src="@Url.Content(post?.PostImage ?? "~/images/default-post.png")" alt="Post Image" />
+    </div>
+
+    <div class="post-details">
+        <div class="post-header">
+            <img src="@Url.Content(post?.ProfileImage ?? "~/images/profile.png")" alt="Profile" />
+            <div>
+                <div class="post-username">@post?.Username ?? "Unknown"</div>
+                <div class="time-ago">@post?.TimeAgo ?? ""</div>
+            </div>
+        </div>
+
+        <div class="post-caption"><strong>@post?.Username ?? "Unknown"</strong> @post?.Content ?? ""</div>
+
+        <div class="likes-count" id="likesCount">@post?.Likes ?? 0 likes</div>
+
+        <div class="comments" id="commentsSection">
+            @if (post?.Comments != null)
+            {
+                foreach (var c in post.Comments)
+                {
+                    <div class="comment"><strong>@c.Username</strong> @c.Text</div>
+                }
+            }
+        </div>
+        <div class="userfunc">
+        <form method="post" asp-action="DeletePost" asp-route-id="@post?.Id">
+            <button type="submit" class="delete-btn">Delete Post</button>
+        </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function escapeHtml(unsafe) {
+        return unsafe.replace(/[&<>"'/]/g, m => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;", "/": "&#x2F;"}[m]));
+    }
+</script>

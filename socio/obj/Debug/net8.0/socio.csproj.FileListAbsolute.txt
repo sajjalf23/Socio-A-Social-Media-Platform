@@ -28,3 +28,4 @@ E:\SOCIO\socio\obj\Debug\net8.0\refint\socio.dll
 E:\SOCIO\socio\obj\Debug\net8.0\socio.pdb
 E:\SOCIO\socio\obj\Debug\net8.0\socio.genruntimeconfig.cache
 E:\SOCIO\socio\obj\Debug\net8.0\ref\socio.dll
+E:\SOCIO\socio\obj\Debug\net8.0\socio.sourcelink.json

@@ -102,7 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }[m]));
     }
 
-    // Handle likes/dislikes using event delegation
     document.querySelectorAll('.post').forEach(post => {
         let likes = parseInt(post.dataset.likes);
         let liked = false, disliked = false;

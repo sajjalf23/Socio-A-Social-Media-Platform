@@ -1,24 +1,52 @@
 @{
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500;700&display=swap" rel="stylesheet">
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "All Users";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Search Users";
 
-    var users = new List<dynamic> {
-new { Id = 1, Username = "john_doe", ProfileImage = "~/images/profile.png", PostCount = 12 },
-new { Id = 2, Username = "sara_khan", ProfileImage = "~/images/profile.png", PostCount = 8 },
-new { Id = 3, Username = "ali_ahmed", ProfileImage = "~/images/profile.png", PostCount = 5 },
-new { Id = 4, Username = "mina_yusuf", ProfileImage = "~/images/profile.png", PostCount = 7 },
-new { Id = 5, Username = "khalid_ali", ProfileImage = "~/images/profile.png", PostCount = 9 },
-new { Id = 6, Username = "nina_ahmad", ProfileImage = "~/images/profile.png", PostCount = 6 }
-};
+    var users = ViewData["Users"] as List<dynamic> ?? new List<dynamic>();
+    var searchQuery = ViewData["SearchQuery"] as string ?? "";
 }
-
 @section Styles {
     <style>
+        .search-heading {
+            text-align: center;
+            font-size: 30px;
+            font-weight: 600;
+            font-family: 'Roboto', sans-serif;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        .search-bar-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .search-bar-wrapper input[type="text"] {
+            width: 400px;
+            max-width: 90%;
+            padding: 8px 12px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .search-bar-wrapper button {
+            padding: 8px 12px;
+            margin-left: 5px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+            background-color: black;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Container centered */
         .users-container-wrapper {
             display: flex;
             justify-content: center;
-            margin-top: 30px;
+            margin-top: 20px;
             margin-bottom: 30px;
         }
 
@@ -119,51 +147,41 @@ new { Id = 6, Username = "nina_ahmad", ProfileImage = "~/images/profile.png", Po
                 justify-content: space-between;
             }
 
-            .user-actions {
-                margin-top: 8px;
+            .search-bar-wrapper input[type="text"] {
+                width: 70%;
             }
-        }
-
-        .users-heading {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 30px;
-            font-weight: 600;
-        }
-
-        .users-heading {
-            font-family: 'Roboto', sans-serif;
         }
     </style>
 }
-
-<div class="users-heading">Users</div>
+<div class="search-bar-wrapper">
+    <form method="get" asp-action="Index" asp-controller="Search">
+        <input type="text" name="query" placeholder="Search by username..." value="@searchQuery" />
+        <button type="submit">Search</button>
+    </form>
+</div>
 
 <div class="users-container-wrapper">
     <div class="users-container">
-        @foreach (var user in users)
+        @if (users.Count == 0)
         {
-            <div class="user-card">
-                <div class="user-info">
-                    <img src="@Url.Content(user.ProfileImage)" alt="@user.Username" />
-                    <div class="text">
-                        <h4>@user.Username</h4>
-                        <p>@user.PostCount posts</p>
+            <p style="text-align:center;">No users found.</p>
+        }
+        else
+        {
+            @foreach (var user in users)
+            {
+                <div class="user-card">
+                    <div class="user-info">
+                        <img src="@Url.Content(user.ProfileImage)" alt="@user.Username" />
+                        <a href="@Url.Action("Index", "Profile", new { id = user.Id })">
+                            <div class="text">
+                                <h4>@user.Username</h4>
+                                <p>@user.PostCount posts</p>
+                            </div>
+                        </a>
                     </div>
                 </div>
-                <div class="user-actions">
-                    <a href="@Url.Action("Profile", "AdminHome", new { id = user.Id })">
-                        <button class="btn-view">View Profile</button>
-                    </a>
-                    <a href="@Url.Action("Comments", "AdminHome", new { id = user.Id })">
-                        <button class="btn-comments">View Comments</button>
-                    </a>
-                    <form method="post" asp-action="DeleteUser" asp-controller="AdminHome">
-                        <input type="hidden" name="id" value="@user.Id" />
-                        <button type="submit" class="btn-delete">Delete User</button>
-                    </form>
-                </div>
-            </div>
+            }
         }
     </div>
 </div>

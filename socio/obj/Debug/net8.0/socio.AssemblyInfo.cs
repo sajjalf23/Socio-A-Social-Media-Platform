@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("socio")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+56154a9a7ba132d9c125dc6cfdc15548aa4d68bf")]
 [assembly: System.Reflection.AssemblyProductAttribute("socio")]
 [assembly: System.Reflection.AssemblyTitleAttribute("socio")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -131,6 +131,16 @@
             max-height: 400px;
         }
     }
+    .userfunc {
+    display: flex;
+    justify-content: flex-end; /* Push buttons to the right */
+    gap: 10px; /* Space between buttons */
+    margin-top: 15px; /* Space from comments/add-comment section */
+}
+.userfunc .delete-btn {
+    padding: 6px 15px;
+}
+
 </style>
 
 <div class="post-container">
@@ -173,9 +183,14 @@
 
         @if (post.Username == currentUser)
         {
-            <form method="post" asp-action="DeletePost" asp-route-id="@post.Id">
+            <div class="userfunc">
+            <form method="post" asp-action="Delete" asp-route-id="@post.Id">
                 <button type="submit" class="delete-btn" style="padding: 6px 15px; ">Delete Post</button>
             </form>
+            <form method="post" asp-action="Edit" asp-route-id="@post.Id">
+                <button type="submit" class="delete-btn" style="padding: 6px 15px; ">Edit Post</button>
+            </form>
+            </div>
         }
     </div>
 </div>
