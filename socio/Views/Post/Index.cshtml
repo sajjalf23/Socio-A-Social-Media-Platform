@@ -1,0 +1,355 @@
+@using SocioApp.Models
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var display = ViewBag.Display;
+    var post = display.Post as Post;
+    var CurrentUser = display.CurrentUser as UserCookieModel;
+    var comments = display.Comments as List<Comment> ?? new List<Comment>();
+    var postuser = display.postuser as ProfileViewModel;
+
+    // Post data
+    var postid = post?.PostId ?? 0;
+    var postimage = !string.IsNullOrWhiteSpace(post?.MediaUrl) ? post.MediaUrl : "/images/noimage.png";
+    var postcontent = post?.Content ?? "";
+    var postupdateat = post?.UpdatedAt ?? post?.CreatedAt ?? DateTime.UtcNow;
+    var postlikes = post?.LikesCount ?? 0;
+
+    // User data
+    var postUser = postuser?.Username ?? "";
+    var postuserimg = !string.IsNullOrWhiteSpace(postuser?.ProfileImage) ? postuser.ProfileImage :
+    "/images/defaultprofile.png";
+    var postuserid = post?.UserId ?? "";
+    var currentUser = CurrentUser?.Name ?? "";
+    var currentuserid = CurrentUser?.Id ?? "";
+
+
+}
+@{
+    Console.WriteLine($"CurrentUser: {currentuserid}, PostUser: {postuserid}");
+}
+
+
+<style>
+    .post-container {
+        max-width: 650px;
+        margin: 20px auto;
+        display: flex;
+        flex-direction: column;
+        background-color: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        padding: 10px;
+    }
+
+    .post-image img {
+        width: 100%;
+        max-height: 600px;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+
+    .post-details {
+        padding: 15px 0;
+    }
+
+    .post-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .post-header img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .post-username {
+        font-weight: 600;
+    }
+
+    .time-ago {
+        font-size: 13px;
+        color: #8e8e8e;
+    }
+
+    .post-caption {
+        margin: 10px 0;
+        font-size: 15px;
+    }
+
+    .comments {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .comment {
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+
+    .comment strong {
+        font-weight: 600;
+        margin-right: 5px;
+    }
+
+    .post-actions {
+        display: flex;
+        gap: 15px;
+        font-size: 22px;
+        margin-bottom: 8px;
+        cursor: pointer;
+    }
+
+    .likes-count {
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+    .add-comment {
+        display: flex;
+        gap: 10px;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+    }
+
+    .add-comment input {
+        flex: 1;
+        border: none;
+        outline: none;
+        padding: 6px;
+        font-size: 14px;
+    }
+
+    .add-comment button {
+        border: none;
+        background: none;
+        color: #0095f6;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .delete-btn {
+        margin-top: 10px;
+        background-color: #000;
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .delete-btn:hover {
+        background-color: #333;
+    }
+
+    .userfunc {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .userfunc .delete-btn {
+        padding: 6px 15px;
+    }
+
+    @@media(max-width: 768px) {
+        .post-container {
+            margin: 20px 10px;
+        }
+
+        .post-image img {
+            max-height: 400px;
+        }
+    }
+</style>
+
+
+
+<div class="post-container">
+    <!-- Post Image -->
+    <div class="post-image">
+        <img src="@(postimage)" alt="Post Image" />
+    </div>
+
+    <div class="post-details">
+        <!-- Post Header -->
+        <div class="post-header">
+            <img src="@(postuserimg)" alt="Profile Image" />
+            <div>
+                <div class="post-username">@postUser</div>
+                <div class="time-ago">@postupdateat.ToString("g")</div>
+            </div>
+        </div>
+
+        <!-- Post Caption -->
+        <div class="post-caption"><strong>@postUser</strong> @postcontent</div>
+
+        <!-- Post Actions -->
+        <div class="post-actions">
+            <i class="bi bi-heart" id="likeBtn" title="Like"></i>
+            <i class="bi bi-hand-thumbs-down" id="dislikeBtn" title="Dislike"></i>
+            <i class="bi bi-chat"></i>
+        </div>
+
+        <div class="likes-count" id="likesCount">@postlikes likes</div>
+
+        <!-- Comments -->
+        <div class="comments" id="commentsSection">
+            @foreach (var c in comments)
+            {
+                <div class="comment">
+                    <a href="@Url.Action("ViewProfile", "Profile", new { id = c.UserId })">
+                        <strong>@c.CommentUserName</strong>
+                    </a> @c.Content
+                </div>
+            }
+        </div>
+
+        <!-- Add Comment -->
+        <div class="add-comment">
+            <input type="text" id="commentInput" placeholder="Add a comment..." />
+            <button id="postBtn">Post</button>
+        </div>
+
+        @if (!string.IsNullOrEmpty(currentuserid?.Trim()) && currentuserid.Trim() == postuserid?.Trim())
+        {
+            <div class="userfunc">
+                <form method="post" asp-action="Delete" asp-route-id="@postid">
+                    <button type="submit" class="delete-btn">Delete Post</button>
+                </form>
+                <form method="get" asp-action="Edit" asp-route-id="@postid">
+                    <button type="submit" class="delete-btn">Edit Post</button>
+                </form>
+            </div>
+        }
+
+    </div>
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        var $commentsSection = $('#commentsSection');
+        var $input = $('#commentInput');
+        var $postBtn = $('#postBtn');
+        var $likesCountEl = $('#likesCount');
+        var $likeBtn = $('#likeBtn');
+        var $dislikeBtn = $('#dislikeBtn');
+
+        var liked = false;
+        var disliked = false;
+        var likes = parseInt("@postlikes");
+
+        function escapeHtml(unsafe) {
+            return unsafe.replace(/[&<>"'/]/g, function (m) {
+                return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;", "/": "&#x2F;" }[m];
+            });
+        }
+
+        function postComment() {
+            var text = $input.val().trim();
+            if (!text) return;
+            var $div = $('<div>').addClass('comment').html('<strong>you</strong> ' + escapeHtml(text));
+            $commentsSection.append($div);
+            $input.val('');
+            $commentsSection.scrollTop($commentsSection[0].scrollHeight);
+        }
+
+        $postBtn.click(postComment);
+
+        $input.keydown(function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                postComment();
+            }
+        });
+
+        $likeBtn.click(function () {
+            var action = liked ? '/Post/DisLike' : '/Post/Like';
+            $.ajax({
+                url: action,
+                type: 'POST',
+                data: { postId: postid },
+                headers: { 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() },
+                success: function (response) {
+                    if (response.success) {
+                        liked = !liked;
+                        if (liked) {
+                            likes++;
+                            $likeBtn.removeClass('bi-heart').addClass('bi-heart-fill').css('color', '#e0245e');
+                            if (disliked) {
+                                disliked = false;
+                                likes++; // adjust likes if previously disliked
+                                $dislikeBtn.removeClass('bi-hand-thumbs-down-fill').addClass('bi-hand-thumbs-down').css('color', '#262626');
+                            }
+                        } else {
+                            likes--;
+                            $likeBtn.removeClass('bi-heart-fill').addClass('bi-heart').css('color', '#262626');
+                        }
+                        $likesCountEl.text(likes + ' likes');
+                    }
+                },
+                error: function (err) { console.error(err); }
+            });
+        });
+
+        $dislikeBtn.click(function () {
+            var action = disliked ? '/Post/Like' : '/Post/DisLike';
+            $.ajax({
+                url: action,
+                type: 'POST',
+                data: { postId: postid },
+                headers: { 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() },
+                success: function (response) {
+                    if (response.success) {
+                        disliked = !disliked;
+                        if (disliked) {
+                            likes--;
+                            $dislikeBtn.removeClass('bi-hand-thumbs-down').addClass('bi-hand-thumbs-down-fill').css('color', '#1e90ff');
+                            if (liked) {
+                                liked = false;
+                                likes--;
+                                $likeBtn.removeClass('bi-heart-fill').addClass('bi-heart').css('color', '#262626');
+                            }
+                        } else {
+                            likes++;
+                            $dislikeBtn.removeClass('bi-hand-thumbs-down-fill').addClass('bi-hand-thumbs-down').css('color', '#262626');
+                        }
+                        $likesCountEl.text(likes + ' likes');
+                    }
+                },
+                error: function (err) { console.error(err); }
+            });
+        });
+
+
+        $dislikeBtn.click(function () {
+            if (!disliked) {
+                likes--;
+                $dislikeBtn.removeClass('bi-hand-thumbs-down').addClass('bi-hand-thumbs-down-fill').css('color', '#1e90ff');
+                if (liked) {
+                    liked = false;
+                    $likeBtn.removeClass('bi-heart-fill').addClass('bi-heart').css('color', '#262626');
+                    likes--;
+                }
+                disliked = true;
+            } else {
+                likes++;
+                $dislikeBtn.removeClass('bi-hand-thumbs-down-fill').addClass('bi-hand-thumbs-down').css('color', '#262626');
+                disliked = false;
+            }
+            $likesCountEl.text(likes + ' likes');
+        });
+    });
+</script>

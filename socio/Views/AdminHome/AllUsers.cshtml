@@ -1,0 +1,169 @@
+@{
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500;700&display=swap" rel="stylesheet">
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "All Users";
+
+    var users = new List<dynamic> {
+new { Id = 1, Username = "john_doe", ProfileImage = "~/images/profile.png", PostCount = 12 },
+new { Id = 2, Username = "sara_khan", ProfileImage = "~/images/profile.png", PostCount = 8 },
+new { Id = 3, Username = "ali_ahmed", ProfileImage = "~/images/profile.png", PostCount = 5 },
+new { Id = 4, Username = "mina_yusuf", ProfileImage = "~/images/profile.png", PostCount = 7 },
+new { Id = 5, Username = "khalid_ali", ProfileImage = "~/images/profile.png", PostCount = 9 },
+new { Id = 6, Username = "nina_ahmad", ProfileImage = "~/images/profile.png", PostCount = 6 }
+};
+}
+
+@section Styles {
+    <style>
+        .users-container-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        .users-container {
+            max-width: 600px;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            padding: 12px 15px;
+            transition: background-color 0.2s ease;
+            flex-wrap: nowrap;
+        }
+
+        .user-card:hover {
+            background-color: #f8f8f8;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-info img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ccc;
+        }
+
+        .user-info .text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-info h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .user-info p {
+            font-size: 13px;
+            color: #666;
+            margin: 2px 0 0;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .user-actions a,
+        .user-actions form {
+            display: inline-block;
+        }
+
+        .user-actions button {
+            padding: 5px 10px;
+            font-size: 13px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-view,
+        .btn-comments {
+            background-color: black;
+            color: white;
+        }
+
+        .btn-delete {
+            background-color: #c82333;
+            color: white;
+        }
+
+        @@media (max-width: 768px) {
+            .users-container {
+                max-width: 90%;
+            }
+
+            .user-card {
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+
+            .user-actions {
+                margin-top: 8px;
+            }
+        }
+
+        .users-heading {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 30px;
+            font-weight: 600;
+        }
+
+        .users-heading {
+            font-family: 'Roboto', sans-serif;
+        }
+    </style>
+}
+
+<div class="users-heading">Users</div>
+
+<div class="users-container-wrapper">
+    <div class="users-container">
+        @foreach (var user in users)
+        {
+            <div class="user-card">
+                <div class="user-info">
+                    <img src="@Url.Content(user.ProfileImage)" alt="@user.Username" />
+                    <div class="text">
+                        <h4>@user.Username</h4>
+                        <p>@user.PostCount posts</p>
+                    </div>
+                </div>
+                <div class="user-actions">
+                    <a href="@Url.Action("Profile", "AdminHome", new { id = user.Id })">
+                        <button class="btn-view">View Profile</button>
+                    </a>
+                    <a href="@Url.Action("Comments", "AdminHome", new { id = user.Id })">
+                        <button class="btn-comments">View Comments</button>
+                    </a>
+                    <form method="post" asp-action="DeleteUser" asp-controller="AdminHome">
+                        <input type="hidden" name="id" value="@user.Id" />
+                        <button type="submit" class="btn-delete">Delete User</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+</div>

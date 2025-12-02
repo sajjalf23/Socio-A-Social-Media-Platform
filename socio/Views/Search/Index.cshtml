@@ -1,0 +1,187 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Search Users";
+
+    var users = ViewData["Users"] as List<dynamic> ?? new List<dynamic>();
+    var searchQuery = ViewData["SearchQuery"] as string ?? "";
+}
+@section Styles {
+    <style>
+        .search-heading {
+            text-align: center;
+            font-size: 30px;
+            font-weight: 600;
+            font-family: 'Roboto', sans-serif;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        .search-bar-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .search-bar-wrapper input[type="text"] {
+            width: 400px;
+            max-width: 90%;
+            padding: 8px 12px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .search-bar-wrapper button {
+            padding: 8px 12px;
+            margin-left: 5px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+            background-color: black;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Container centered */
+        .users-container-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+
+        .users-container {
+            max-width: 600px;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            padding: 12px 15px;
+            transition: background-color 0.2s ease;
+            flex-wrap: nowrap;
+        }
+
+        .user-card:hover {
+            background-color: #f8f8f8;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-info img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ccc;
+        }
+
+        .user-info .text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-info h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .user-info p {
+            font-size: 13px;
+            color: #666;
+            margin: 2px 0 0;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .user-actions a,
+        .user-actions form {
+            display: inline-block;
+        }
+
+        .user-actions button {
+            padding: 5px 10px;
+            font-size: 13px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-view,
+        .btn-comments {
+            background-color: black;
+            color: white;
+        }
+
+        .btn-delete {
+            background-color: #c82333;
+            color: white;
+        }
+
+        @@media (max-width: 768px) {
+            .users-container {
+                max-width: 90%;
+            }
+
+            .user-card {
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+
+            .search-bar-wrapper input[type="text"] {
+                width: 70%;
+            }
+        }
+    </style>
+}
+<div class="search-bar-wrapper">
+    <form method="get" asp-action="Index" asp-controller="Search">
+        <input type="text" name="query" placeholder="Search by username..." value="@searchQuery" />
+        <button type="submit">Search</button>
+    </form>
+</div>
+
+<div class="users-container-wrapper">
+    <div class="users-container">
+        @if (users.Count == 0)
+        {
+            <p style="text-align:center;">No users found.</p>
+        }
+        else
+        {
+            @foreach (var user in users)
+            {
+                <div class="user-card">
+                    <div class="user-info">
+                        <img src="@Url.Content(user.ProfileImage)" alt="@user.Username" />
+                        <a href="@Url.Action("Index", "Profile", new { id = user.Id })">
+                            <div class="text">
+                                <h4>@user.Username</h4>
+                                <p>@user.PostCount posts</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>

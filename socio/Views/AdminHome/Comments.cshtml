@@ -1,0 +1,163 @@
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "User Comments";
+
+    // Sample data: replace with actual comments from your controller
+    var comments = new List<dynamic> {
+        new { Id = 1, Username = "john_doe", ProfileImage = "~/images/profile.png", CommentText = "Nice post!", PostId = 101, PostTitle = "Sunday Vibes" },
+        new { Id = 2, Username = "john_doe", ProfileImage = "~/images/profile.png", CommentText = "Awesome picture!", PostId = 102, PostTitle = "Travel Diaries" },
+        new { Id = 3, Username = "john_doe", ProfileImage = "~/images/profile.png", CommentText = "Loved this!", PostId = 103, PostTitle = "Foodie Heaven" },
+        new { Id = 4, Username = "john_doe", ProfileImage = "~/images/profile.png", CommentText = "Very informative!", PostId = 104, PostTitle = "Tech Updates" }
+    };
+}
+
+@section Styles {
+    <style>
+        .comments-heading {
+            text-align: center;
+            font-size: 30px;
+            font-weight: 600;
+            font-family: 'Roboto', sans-serif;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        .comments-container-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        .comments-container {
+            max-width: 600px;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .comment-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            padding: 12px 15px;
+            transition: background-color 0.2s ease;
+            flex-wrap: nowrap;
+        }
+
+        .comment-card:hover {
+            background-color: #f8f8f8;
+        }
+
+        .comment-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .comment-info img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ccc;
+        }
+
+        .comment-info .text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .comment-info h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .comment-info p {
+            font-size: 13px;
+            color: #666;
+            margin: 2px 0 0;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .comment-actions a,
+        .comment-actions form {
+            display: inline-block;
+        }
+
+        .comment-actions button {
+            padding: 5px 10px;
+            font-size: 13px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-view {
+            background-color: black;
+            color: white;
+        }
+
+        .btn-delete {
+            background-color: #c82333;
+            color: white;
+        }
+
+        @@media (max-width: 768px) {
+            .comments-container {
+                max-width: 90%;
+            }
+
+            .comment-card {
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+
+            .comment-actions {
+                margin-top: 8px;
+            }
+        }
+    </style>
+}
+
+<h2 class="comments-heading">Comments of the User</h2>
+
+<div class="comments-container-wrapper">
+    <div class="comments-container">
+        @foreach (var comment in comments)
+        {
+            <div class="comment-card">
+                <div class="comment-info">
+                    <img src="@Url.Content(comment.ProfileImage)" alt="@comment.Username" />
+                    <div class="text">
+                        <h4>@comment.Username</h4>
+                        <p>@comment.CommentText</p>
+                        <p style="font-size:13px; color:#888;">On post: 
+                            <a href="@Url.Action("Post", "AdminHome", new { id = comment.PostId })">
+                                @comment.PostTitle
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                <div class="comment-actions">
+                    <form method="post" asp-action="DeleteComment" asp-controller="AdminHome">
+                        <input type="hidden" name="id" value="@comment.Id" />
+                        <button type="submit" class="btn-delete">Delete Comment</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+</div>
