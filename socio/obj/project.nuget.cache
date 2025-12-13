@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "zW3IBjHuh7o=",
+  "dgSpecHash": "VgTNeRrFCbA=",
   "success": true,
-  "projectFilePath": "E:\\SOCIO\\socio\\socio.csproj",
+  "projectFilePath": "E:\\Socio-A-Social-Media-Platform\\socio\\socio.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\HP\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\HP\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

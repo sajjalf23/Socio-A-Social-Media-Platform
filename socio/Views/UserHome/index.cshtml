@@ -1,18 +1,10 @@
-@{
-    ViewData["Title"] = "Socio Feed";
-    var posts = ViewData["Posts"] as List<dynamic>;
-}
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" /> 
-
 <style>
     body {
         background-color: #fff;
         margin: 0;
         display: flex;
         flex-direction: row;
-        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
     }
 
     .feed {
@@ -24,33 +16,132 @@
         padding: 20px 0;
     }
 
-    .post { margin-bottom: 60px; background-color: #fff; padding: 15px; }
-    .post-header { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; }
-    .post-header img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
-    .post-header .username { font-weight: 600; font-size: 15px; }
-    .post-header .time { color: #8e8e8e; font-size: 14px; }
-    .post-image { width: 100%; height: auto; border-radius: 6px; margin-bottom: 10px; }
-    .post-actions { display: flex; align-items: center; gap: 15px; font-size: 22px; color: #262626; cursor: pointer; margin-bottom: 8px; }
-    .likes-count { font-weight: 600; font-size: 15px; margin-bottom: 8px; }
-    .post-content { font-size: 15px; margin-bottom: 10px; }
-    .comments { max-height: 200px; overflow-y: auto; margin-bottom: 5px; }
-    .comment { font-size: 14px; margin-bottom: 3px; }
-    .comment strong { font-weight: 600; margin-right: 5px; }
-    .add-comment { display: flex; align-items: center; gap: 10px; border-top: 1px solid #eee; padding-top: 10px; }
-    .add-comment input { border: none; flex: 1; outline: none; background: none; font-size: 14px; padding: 5px; }
-    .add-comment button { border: none; background: none; color: #0095f6; font-weight: 600; cursor: pointer; }
+    .post {
+        margin-bottom: 60px;
+        background-color: #fff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
 
-    @@media(max-width: 768px) {
-        body { flex-direction: column; }
-        .feed { margin-left: 0; padding: 0 10px; }
+    .post-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 10px;
+    }
+
+    .post-header img {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .post-header .username {
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+    .post-header .time {
+        color: #8e8e8e;
+        font-size: 14px;
+    }
+
+    .post-image {
+        width: 100%;
+        height: auto;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+
+    .post-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: 22px;
+        color: #262626;
+        cursor: pointer;
+        margin-bottom: 8px;
+    }
+
+    .likes-count {
+        font-weight: 600;
+        font-size: 15px;
+        margin-bottom: 8px;
+    }
+
+    .post-content {
+        font-size: 15px;
+        margin-bottom: 10px;
+    }
+
+    .comments {
+        max-height: 200px;
+        overflow-y: auto;
+        margin-bottom: 5px;
+    }
+
+    .comment {
+        font-size: 14px;
+        margin-bottom: 3px;
+    }
+
+    .comment strong {
+        font-weight: 600;
+        margin-right: 5px;
+    }
+
+    .add-comment {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+    }
+
+    .add-comment input {
+        border: none;
+        flex: 1;
+        outline: none;
+        background: none;
+        font-size: 14px;
+        padding: 5px;
+    }
+
+    .add-comment button {
+        border: none;
+        background: none;
+        color: #0095f6;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    @@media(max-width:768px) {
+        body {
+            flex-direction: column;
+        }
+
+        .feed {
+            margin-left: 0;
+            padding: 0 10px;
+        }
     }
 </style>
+@using SocioApp.Models
+@{
+    ViewData["Title"] = "Socio Feed";
+    var posts = ViewData["Posts"] as List<dynamic>;
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
 
 <div class="feed">
     @for (int i = 0; i < posts?.Count; i++)
     {
         var post = posts[i];
-        <div class="post" data-index="@i" data-likes="@post.Likes">
+        <div class="post" data-postid="@post.PostId">
             <div class="post-header">
                 <img src="@Url.Content(post.ProfileImage)" alt="Profile" />
                 <div>
@@ -73,9 +164,19 @@
             </div>
 
             <div class="comments">
-                @foreach (var comment in post.Comments)
+                @{
+                    int count = 0;
+                    foreach (var comment in post.Comments)
+                    {
+                        if (count >= 2) break;
+                        <p class="comment"><strong>@comment.Username</strong> @comment.Text</p>
+                        count++;
+                    }
+                }
+
+                @if (post.Comments.Count > 2)
                 {
-                    <p class="comment"><strong>@comment.Username</strong> @comment.Text</p>
+                    <p class="text-muted">View all @post.Comments.Count comments...</p>
                 }
             </div>
 
@@ -87,87 +188,79 @@
     }
 </div>
 
-@section Scripts {
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+    $(document).ready(function () {
+        function escapeHtml(unsafe) {
+            if (!unsafe) return "";
+            return unsafe.replace(/[&<>"'/]/g, function (m) {
+                return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;", "/": "&#x2F;" }[m];
+            });
+        }
 
-    function escapeHtml(unsafe) {
-        return unsafe.replace(/[&<>"'/]/g, m => ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#039;',
-            '/': '&#x2F;'
-        }[m]));
-    }
+        const token = $('input[name="__RequestVerificationToken"]').val() || '';
 
-    document.querySelectorAll('.post').forEach(post => {
-        let likes = parseInt(post.dataset.likes);
-        let liked = false, disliked = false;
+        $('.post').each(function () {
+            const $post = $(this);
+            const postId = $post.data('postid');
+            const $likesCount = $post.find('.likes-count');
+            const $likeBtn = $post.find('.like-btn');
+            const $dislikeBtn = $post.find('.dislike-btn');
+            const $commentsDiv = $post.find('.comments');
+            const $commentInput = $post.find('input');
+            const $commentBtn = $post.find('.post-comment-btn');
 
-        const likeBtn = post.querySelector('.like-btn');
-        const dislikeBtn = post.querySelector('.dislike-btn');
-        const likesCountEl = post.querySelector('.likes-count');
-
-        likeBtn.addEventListener('click', () => {
-            if (!liked) {
-                likes++;
-                likeBtn.classList.replace('bi-heart', 'bi-heart-fill');
-                likeBtn.style.color = '#e0245e';
-                if (disliked) {
-                    disliked = false;
-                    dislikeBtn.classList.replace('bi-hand-thumbs-down-fill', 'bi-hand-thumbs-down');
-                    likes++;
-                }
-                liked = true;
-            } else {
-                likes--;
-                likeBtn.classList.replace('bi-heart-fill', 'bi-heart');
-                likeBtn.style.color = '#262626';
-                liked = false;
+            function updateReactionUI(res) {
+                $likesCount.text((res.likes ?? 0) + ' likes');
+                $likeBtn.toggleClass('bi-heart-fill', res.liked)
+                    .toggleClass('bi-heart', !res.liked)
+                    .css('color', res.liked ? '#e0245e' : '#262626');
+                $dislikeBtn.toggleClass('bi-hand-thumbs-down-fill', res.disliked)
+                    .toggleClass('bi-hand-thumbs-down', !res.disliked)
+                    .css('color', res.disliked ? '#1e90ff' : '#262626');
             }
-            likesCountEl.textContent = likes + ' likes';
-        });
 
-        dislikeBtn.addEventListener('click', () => {
-            if (!disliked) {
-                likes--;
-                dislikeBtn.classList.replace('bi-hand-thumbs-down', 'bi-hand-thumbs-down-fill');
-                dislikeBtn.style.color = '#1e90ff';
-                if (liked) {
-                    liked = false;
-                    likeBtn.classList.replace('bi-heart-fill', 'bi-heart');
-                    likeBtn.style.color = '#262626';
-                    likes--;
-                }
-                disliked = true;
-            } else {
-                likes++;
-                dislikeBtn.classList.replace('bi-hand-thumbs-down-fill', 'bi-hand-thumbs-down');
-                dislikeBtn.style.color = '#262626';
-                disliked = false;
+            $likeBtn.click(function () {
+                $.post('/Post/Like', { postId: postId, __RequestVerificationToken: token })
+                    .done(res => { if (res.success) updateReactionUI(res); else alert(res.message || 'Error liking post'); })
+                    .fail(() => alert('Server error'));
+            });
+
+            $dislikeBtn.click(function () {
+                $.post('/Post/DisLike', { postId: postId, __RequestVerificationToken: token })
+                    .done(res => { if (res.success) updateReactionUI(res); else alert(res.message || 'Error disliking post'); })
+                    .fail(() => alert('Server error'));
+            });
+
+            function postComment() {
+                const content = $commentInput.val()?.trim();
+                if (!content) return;
+
+                $.post('/Post/AddComment', { postId: postId, content: content, __RequestVerificationToken: token }, function (res) {
+
+                    if (res.success && res.comment) {
+                        const c = res.comment;
+                        const username = c.commentUserName || "Unknown";
+                        const commentText = c.content || "";
+
+                        $commentsDiv.append('<p class="comment"><strong>' + escapeHtml(username) + '</strong> ' + escapeHtml(commentText) + '</p>');
+                        $commentInput.val('');
+                        $commentsDiv.scrollTop($commentsDiv[0].scrollHeight);
+                    } else {
+                        alert(res.message || 'Error posting comment');
+                    }
+                }, "json")
+                    .fail(() => alert('Server error'));
             }
-            likesCountEl.textContent = likes + ' likes';
-        });
 
-        const commentBtn = post.querySelector('.post-comment-btn');
-        const commentInput = post.querySelector('input');
-        const commentsDiv = post.querySelector('.comments');
 
-        commentBtn.addEventListener('click', () => {
-            const text = commentInput.value.trim();
-            if (text) {
-                const newComment = document.createElement('p');
-                newComment.classList.add('comment');
-                newComment.innerHTML = `<strong>you</strong> ${escapeHtml(text)}`;
-                commentsDiv.appendChild(newComment);
-                commentInput.value = '';
-                commentsDiv.scrollTop = commentsDiv.scrollHeight;
-            }
+
+
+            $commentBtn.click(postComment);
+            $commentInput.keydown(e => { if (e.key === 'Enter') { e.preventDefault(); postComment(); } });
+
+            // Load initial reaction state
+            $.get('/Post/GetUserReaction', { postId: postId }, res => { if (res.success) updateReactionUI(res); });
         });
     });
-
-});
 </script>
-}

@@ -68,19 +68,15 @@ namespace SocioApp.Pages
 
             if (result.Succeeded)
             {
-                // Ensure "User" role exists
                 if (!await _roleManager.RoleExistsAsync("User"))
                 {
                     await _roleManager.CreateAsync(new IdentityRole("User"));
                 }
 
-                // Assign role to the user
                 await _userManager.AddToRoleAsync(user, "User");
 
-                // Sign in the user
                 await _signInManager.SignInAsync(user, isPersistent: false);
 
-                // Create a lightweight object for the cookie
                 var basicUser = new UserCookieModel
                 {
                     Id = user.Id, 
@@ -93,14 +89,13 @@ namespace SocioApp.Pages
 
                 string userJson = JsonSerializer.Serialize(basicUser);
 
-                // Append cookie with basic user info
                 HttpContext.Response.Cookies.Append(
                     "user",
                     userJson,
                     new CookieOptions
                     {
                         HttpOnly = true,
-                        Secure = true, // use HTTPS
+                        Secure = true, 
                         Expires = DateTimeOffset.UtcNow.AddDays(7),
                         SameSite = SameSiteMode.Lax 
                     }

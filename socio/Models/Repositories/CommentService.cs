@@ -10,7 +10,7 @@ public class CommentService : ICommentService
     private readonly ApplicationDbContext _context;
     private readonly ILogger<CommentService> _logger;
 
-     private readonly IConfiguration _configuration;
+    private readonly IConfiguration _configuration;
 
     public CommentService(ApplicationDbContext context, ILogger<CommentService> logger, IConfiguration config)
     {
@@ -19,7 +19,6 @@ public class CommentService : ICommentService
         _configuration = config;
     }
 
-    // Get SQL connection from ApplicationDbContext for Dapper
     private SqlConnection GetConnection()
     {
         var connectionString = _configuration.GetConnectionString("DefaultConnection");
@@ -35,16 +34,24 @@ public class CommentService : ICommentService
         {
             using var connection = GetConnection();
             var sql = @"
-            SELECT 
-                c.CommentId, c.PostId, c.UserId, c.Content, c.IsHidden, c.CreatedAt, c.UpdatedAt,
-                u.UserName AS CommentUserName
-            FROM Comments c
-            INNER JOIN AspNetUsers u ON c.UserId = u.Id
-            WHERE c.PostId = @PostId AND c.IsHidden = 0
-            ORDER BY c.CreatedAt ASC;";
+        SELECT 
+            c.CommentId, c.PostId, c.UserId, c.Content, c.IsHidden, c.CreatedAt, c.UpdatedAt,
+            u.UserName AS CommentUserName
+        FROM Comments c
+        INNER JOIN AspNetUsers u ON c.UserId = u.Id
+        WHERE c.PostId = @PostId AND c.IsHidden = 0
+        ORDER BY c.CreatedAt ASC;";
 
             var comments = await connection.QueryAsync<Comment>(sql, new { PostId = postId });
-            return comments.ToList();
+
+            // Ensure CommentUserName is always set
+            var commentList = comments.Select(c =>
+            {
+                c.CommentUserName ??= "Unknown";
+                return c;
+            }).ToList();
+
+            return commentList;
         }
         catch (Exception ex)
         {
@@ -52,6 +59,8 @@ public class CommentService : ICommentService
             throw;
         }
     }
+
+
     public async Task<IEnumerable<Comment>> GetCommentsByUserAsync(string userId)
     {
         try

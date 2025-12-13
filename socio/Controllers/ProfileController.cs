@@ -21,16 +21,13 @@ namespace SocioApp.Controllers
         [HttpGet("")]
         public async Task<IActionResult> MyProfile()
         {
-            // Check if the user cookie exists
             if (!HttpContext.Request.Cookies.TryGetValue("user", out var userJson))
                 return Redirect("/Login");
 
-            // Deserialize cookie to get the user Id
             var userInfo = JsonSerializer.Deserialize<UserCookieModel>(userJson);
             if (userInfo == null || string.IsNullOrWhiteSpace(userInfo.Id))
                 return Redirect("/Login");
 
-            // Fetch profile
             var profile = await _profileService.GetProfileAsync(userInfo.Id.Trim());
             if (profile == null)
                 return NotFound();
@@ -46,7 +43,6 @@ namespace SocioApp.Controllers
             if (string.IsNullOrWhiteSpace(id))
                 return BadRequest();
 
-            // Prevent accidental "MyProfile" string from being passed as an ID
             if (id.Equals("MyProfile", System.StringComparison.OrdinalIgnoreCase))
                 return RedirectToAction(nameof(MyProfile));
 
@@ -65,7 +61,6 @@ namespace SocioApp.Controllers
             if (!HttpContext.Request.Cookies.TryGetValue("user", out var userJson))
                 return Redirect("/Login");
 
-            // Deserialize cookie to get the user Id
             var userInfo = JsonSerializer.Deserialize<UserCookieModel>(userJson);
             if (userInfo == null || string.IsNullOrWhiteSpace(userInfo.Id))
                 return Redirect("/Login");

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-public interface IPostService 
+public interface IPostService
 {
     Task<int> CreatePostAsync(string userId, string caption, IFormFile? imageFile);
 
@@ -14,10 +14,14 @@ public interface IPostService
 
     Task<bool> ToggleHidePostAsync(int postId);
 
-    Task<IEnumerable<Post>> GetAllPostsAsync(bool includeHidden = false);
+    Task<IEnumerable<dynamic>> GetAllPostsAsync(bool includeHidden = false);
 
-    Task<bool> LikePostAsync(int postId);
-    Task<bool> DislikePostAsync(int postId);
+    // Task<bool> LikePostAsync(int postId);
+    // Task<bool> DislikePostAsync(int postId);
+    Task<bool> LikePostAsync(int postId, string userId);
+    Task<bool> DislikePostAsync(int postId, string userId);
+
+    Task<string?> GetUserReactionAsync(int postId, string userId);
+
 
 }
-

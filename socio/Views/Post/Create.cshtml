@@ -124,12 +124,10 @@
 <script>
     $(document).ready(function () {
 
-        // Clicking the upload box opens file dialog
         $("#uploadArea").on("click", function () {
             $("#imageInput").trigger("click");
         });
 
-        // When user selected a file
         $("#imageInput").on("change", function () {
             const file = this.files[0];
 
@@ -141,7 +139,7 @@
                         .attr("src", e.target.result)
                         .show();
 
-                    $("#uploadArea").hide(); // hide upload area after preview
+                    $("#uploadArea").hide(); 
                 };
 
                 reader.readAsDataURL(file);

@@ -17,12 +17,17 @@ namespace SocioApp.Services
 
         private readonly IConfiguration _configuration;
 
+        private readonly string _connectionString;
+
         public PostService(ApplicationDbContext context, Cloudinary cloudinary, ILogger<PostService> logger, IConfiguration configuration)
         {
             _context = context;
             _cloudinary = cloudinary;
             _logger = logger;
             _configuration = configuration; // assign it
+           _connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException(
+                    "DefaultConnection is missing from configuration.");
         }
 
         private SqlConnection GetConnection()
@@ -34,19 +39,25 @@ namespace SocioApp.Services
             return new SqlConnection(connectionString);
         }
 
+        // private SqlConnection GetConnection()
+        // {
+        //     return new SqlConnection(_connectionString);
+        // }
+
+
         public async Task<Post?> GetPostByIdAsync(int postId)
         {
             try
             {
                 using var connection = GetConnection();
-                await connection.OpenAsync();
 
                 const string sql = @"
-                SELECT PostId, UserId, Content, MediaUrl, IsHidden, LikesCount, DislikesCount, CreatedAt, UpdatedAt
-                FROM Posts
-                WHERE PostId = @PostId";
+            SELECT PostId, UserId, Content, MediaUrl, IsHidden, LikesCount, DislikesCount, CreatedAt, UpdatedAt
+            FROM Posts
+            WHERE PostId = @PostId";
 
                 var post = await connection.QuerySingleOrDefaultAsync<Post>(sql, new { PostId = postId });
+
                 return post == null || post.IsHidden ? null : post;
             }
             catch (Exception ex)
@@ -56,17 +67,28 @@ namespace SocioApp.Services
             }
         }
 
+
         private string GetCloudinaryPublicId(string mediaUrl)
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(mediaUrl))
+                {
+                    _logger.LogWarning("GetCloudinaryPublicId called with empty mediaUrl");
+                    return "";
+                }
+
                 var uri = new Uri(mediaUrl);
                 var path = uri.AbsolutePath;
-                var parts = path.Split('/');
+
+                var parts = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
                 int uploadIndex = Array.IndexOf(parts, "upload");
-                if (uploadIndex == -1 || uploadIndex + 2 >= parts.Length) return "";
-                string publicId = string.Join("/", parts[(uploadIndex + 2)..]);
-                publicId = System.IO.Path.ChangeExtension(publicId, null);
+
+                if (uploadIndex == -1 || uploadIndex + 1 >= parts.Length)
+                    return "";
+                string publicId = string.Join("/", parts[(uploadIndex + 1)..]);
+                publicId = Path.ChangeExtension(publicId, null);
+
                 return publicId;
             }
             catch (Exception ex)
@@ -175,48 +197,6 @@ namespace SocioApp.Services
                 throw;
             }
         }
-        public async Task<bool> LikeAsync(int postId)
-        {
-            try
-            {
-                using var connection = GetConnection();
-                var sql = @"
-            UPDATE Posts
-            SET LikesCount = LikesCount + 1,
-                UpdatedAt = @UpdatedAt
-            WHERE PostId = @PostId";
-
-                var rows = await connection.ExecuteAsync(sql, new { PostId = postId, UpdatedAt = DateTime.UtcNow });
-                return rows > 0;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error liking post {PostId}", postId);
-                return false;
-            }
-        }
-
-        public async Task<bool> DislikeAsync(int postId)
-        {
-            try
-            {
-                using var connection = GetConnection();
-                var sql = @"
-            UPDATE Posts
-            SET LikesCount = CASE WHEN LikesCount > 0 THEN LikesCount - 1 ELSE 0 END,
-                UpdatedAt = @UpdatedAt
-            WHERE PostId = @PostId";
-
-                var rows = await connection.ExecuteAsync(sql, new { PostId = postId, UpdatedAt = DateTime.UtcNow });
-                return rows > 0;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error disliking post {PostId}", postId);
-                return false;
-            }
-        }
-
 
         public async Task<bool> DeletePostAsync(int postId, string userId)
         {
@@ -282,19 +262,49 @@ namespace SocioApp.Services
             }
         }
 
-        public async Task<IEnumerable<Post>> GetAllPostsAsync(bool includeHidden = false)
+        // public async Task<IEnumerable<Post>> GetAllPostsAsync(bool includeHidden = false)
+        // {
+        //     try
+        //     {
+        //         // Use GetConnection() and explicitly open it
+        //         using var connection = GetConnection();
+        //         await connection.OpenAsync();
+
+        //         var sql = @"
+        //     SELECT PostId 
+        //     FROM Posts";
+
+        //         if (!includeHidden)
+        //             sql += " WHERE IsHidden = 0";
+
+        //         sql += " ORDER BY CreatedAt DESC";
+
+        //         // Query posts
+        //         var posts = await connection.QueryAsync<dynamic>(sql);
+        //         return posts;
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         _logger.LogError(ex, "Error fetching all posts (includeHidden={IncludeHidden})", includeHidden);
+        //         throw;
+        //     }
+        // }
+
+        public async Task<IEnumerable<dynamic>> GetAllPostsAsync(bool includeHidden = false)
         {
             try
             {
                 using var connection = GetConnection();
-                string sql = @"
-                    SELECT PostId, UserId, Content, MediaUrl, IsHidden, LikesCount, DislikesCount, CreatedAt, UpdatedAt
-                    FROM Posts";
+                await connection.OpenAsync();
 
-                if (!includeHidden) sql += " WHERE IsHidden = 0";
+                var sql = "SELECT PostId FROM Posts";
+
+                if (!includeHidden)
+                    sql += " WHERE IsHidden = 0";
+
                 sql += " ORDER BY CreatedAt DESC";
 
-                var posts = await connection.QueryAsync<Post>(sql);
+                var posts = await connection.QueryAsync<dynamic>(sql);
                 return posts;
             }
             catch (Exception ex)
@@ -303,47 +313,143 @@ namespace SocioApp.Services
                 throw;
             }
         }
-
-        public async Task<bool> LikePostAsync(int postId)
+        public async Task<bool> LikePostAsync(int postId, string userId)
         {
+            using var connection = GetConnection();
+            await connection.OpenAsync(); // Must open connection before transaction
+            using var transaction = connection.BeginTransaction();
+
             try
             {
-                using var connection = GetConnection();
-                var sql = @"
-                    UPDATE Posts
-                    SET LikesCount = LikesCount + 1,
-                        UpdatedAt = @UpdatedAt
-                    WHERE PostId = @PostId";
+                // Remove previous dislike if exists
+                var sqlRemoveDislike = @"
+                DELETE FROM PostReactions
+                WHERE PostId = @PostId AND UserId = @UserId AND Type = 'Dislike'";
+                await connection.ExecuteAsync(sqlRemoveDislike, new { PostId = postId, UserId = userId }, transaction);
 
-                var rows = await connection.ExecuteAsync(sql, new { PostId = postId, UpdatedAt = DateTime.UtcNow });
-                return rows > 0;
+                // Check if user already liked
+                var sqlCheckLike = @"
+                SELECT COUNT(*) FROM PostReactions
+                WHERE PostId = @PostId AND UserId = @UserId AND Type = 'Like'";
+                var alreadyLiked = await connection.ExecuteScalarAsync<int>(sqlCheckLike, new { PostId = postId, UserId = userId }, transaction);
+
+                if (alreadyLiked > 0)
+                {
+                    // Remove like (toggle)
+                    var sqlRemoveLike = @"
+                    DELETE FROM PostReactions
+                    WHERE PostId = @PostId AND UserId = @UserId AND Type = 'Like'";
+                    await connection.ExecuteAsync(sqlRemoveLike, new { PostId = postId, UserId = userId }, transaction);
+                }
+                else
+                {
+                    // Add like
+                    var sqlAddLike = @"
+                    INSERT INTO PostReactions (PostId, UserId, Type)
+                    VALUES (@PostId, @UserId, 'Like')";
+                    await connection.ExecuteAsync(sqlAddLike, new { PostId = postId, UserId = userId }, transaction);
+                }
+
+                // Update counts in Posts table
+                var sqlUpdateCounts = @"
+                UPDATE Posts
+                SET LikesCount = (SELECT COUNT(*) FROM PostReactions WHERE PostId = @PostId AND Type = 'Like'),
+                    DislikesCount = (SELECT COUNT(*) FROM PostReactions WHERE PostId = @PostId AND Type = 'Dislike'),
+                    UpdatedAt = @UpdatedAt
+                WHERE PostId = @PostId";
+                await connection.ExecuteAsync(sqlUpdateCounts, new { PostId = postId, UpdatedAt = DateTime.UtcNow }, transaction);
+
+                transaction.Commit();
+                return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error liking post {PostId}", postId);
+                transaction.Rollback();
+                _logger.LogError(ex, "Error liking post {PostId} by user {UserId}", postId, userId);
                 throw;
             }
         }
 
-        public async Task<bool> DislikePostAsync(int postId) 
+        public async Task<bool> DislikePostAsync(int postId, string userId)
         {
+            using var connection = GetConnection();
+            await connection.OpenAsync();
+            using var transaction = connection.BeginTransaction();
+
             try
             {
-                using var connection = GetConnection();
-                var sql = @"
-                    UPDATE Posts
-                    SET DislikesCount = DislikesCount + 1,
-                        UpdatedAt = @UpdatedAt
-                    WHERE PostId = @PostId";
+                // Remove previous like if exists
+                var sqlRemoveLike = @"
+                DELETE FROM PostReactions
+                WHERE PostId = @PostId AND UserId = @UserId AND Type = 'Like'";
+                await connection.ExecuteAsync(sqlRemoveLike, new { PostId = postId, UserId = userId }, transaction);
 
-                var rows = await connection.ExecuteAsync(sql, new { PostId = postId, UpdatedAt = DateTime.UtcNow });
-                return rows > 0;
+                // Check if user already disliked
+                var sqlCheckDislike = @"
+                SELECT COUNT(*) FROM PostReactions
+                WHERE PostId = @PostId AND UserId = @UserId AND Type = 'Dislike'";
+                var alreadyDisliked = await connection.ExecuteScalarAsync<int>(sqlCheckDislike, new { PostId = postId, UserId = userId }, transaction);
+
+                if (alreadyDisliked > 0)
+                {
+                    // Remove dislike (toggle)
+                    var sqlRemoveDislike = @"
+                    DELETE FROM PostReactions
+                    WHERE PostId = @PostId AND UserId = @UserId AND Type = 'Dislike'";
+                    await connection.ExecuteAsync(sqlRemoveDislike, new { PostId = postId, UserId = userId }, transaction);
+                }
+                else
+                {
+                    // Add dislike
+                    var sqlAddDislike = @"
+                    INSERT INTO PostReactions (PostId, UserId, Type)
+                    VALUES (@PostId, @UserId, 'Dislike')";
+                    await connection.ExecuteAsync(sqlAddDislike, new { PostId = postId, UserId = userId }, transaction);
+                }
+
+                // Update counts in Posts table
+                var sqlUpdateCounts = @"
+                UPDATE Posts
+                SET LikesCount = (SELECT COUNT(*) FROM PostReactions WHERE PostId = @PostId AND Type = 'Like'),
+                    DislikesCount = (SELECT COUNT(*) FROM PostReactions WHERE PostId = @PostId AND Type = 'Dislike'),
+                    UpdatedAt = @UpdatedAt
+                WHERE PostId = @PostId";
+                await connection.ExecuteAsync(sqlUpdateCounts, new { PostId = postId, UpdatedAt = DateTime.UtcNow }, transaction);
+
+                transaction.Commit();
+                return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error disliking post {PostId}", postId);
+                transaction.Rollback();
+                _logger.LogError(ex, "Error disliking post {PostId} by user {UserId}", postId, userId);
                 throw;
             }
         }
+
+        public async Task<string?> GetUserReactionAsync(int postId, string userId)
+        {
+            using var connection = GetConnection();
+            await connection.OpenAsync();
+
+            try
+            {
+                var sql = @"
+                SELECT Type 
+                FROM PostReactions
+                WHERE PostId = @PostId AND UserId = @UserId";
+
+                var reaction = await connection.QuerySingleOrDefaultAsync<string>(sql, new { PostId = postId, UserId = userId });
+                return reaction; // "Like", "Dislike", or null
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching reaction for post {PostId} by user {UserId}", postId, userId);
+                throw;
+            }
+        }
+
+
+
     }
 }

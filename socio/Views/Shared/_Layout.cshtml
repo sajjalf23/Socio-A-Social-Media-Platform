@@ -26,7 +26,6 @@
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
         }
 
-        /* Desktop Sidebar */
         .sidebar {
             width: 250px;
             background-color: #fff;
@@ -69,14 +68,12 @@
             padding-left: 15px;
         }
 
-        /* Main content */
         .main-content {
             margin-left: 250px;
             flex: 1;
             padding: 20px 10px;
         }
 
-        /* Mobile Topbar & Bottom Navbar */
         .mobile-topbar,
         .bottom-navbar {
             display: none;
@@ -161,11 +158,11 @@
     <!-- Desktop Sidebar -->
     <div class="sidebar d-none d-md-flex flex-column">
         <div>
-            <a href="@Url.Action("Index", "Home")">
+            <a href="@Url.Action("Index", "UserHome")">
             <img src="~/images/landing-logo-img.png" alt="Logo" class="logo" />
             </a>
             <div class="nav-links">
-                <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-fill"></i> Home</a>
+                <a asp-controller="UserHome" asp-action="Index"><i class="bi bi-house-fill"></i> Home</a>
                 <a asp-controller="Post" asp-action="Create"><i class="bi bi-plus-circle"></i> Create</a>
                 <a asp-controller="Profile" asp-action="Index"><i class="bi bi-person-circle"></i> Profile</a>
                 <a asp-controller="Search" asp-action="Index"><i class="bi bi-search"></i> Search </a>
@@ -183,7 +180,7 @@
  
     <!-- Mobile Topbar -->
     <div class="mobile-topbar d-flex d-md-none justify-content-between align-items-center p-2 border-bottom">
-        <a href="@Url.Action("Index", "Home")">
+        <a href="@Url.Action("Index", "UserHome")">
         <img src="~/images/landing-logo-img.png" alt="Logo" height="35" /></a>
     <form asp-area="Identity" asp-page="/Account/Logout" method="post" class="d-inline">
     <button type="submit" class="btn btn-link text-dark p-0">
@@ -200,7 +197,7 @@
 
 <!-- Mobile Bottom Navbar -->
 <div class="bottom-navbar d-flex d-md-none justify-content-around align-items-center border-top">
-    <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-fill"></i></a>
+    <a asp-controller="UserHome" asp-action="Index"><i class="bi bi-house-fill"></i></a>
     <a asp-controller="Post" asp-action="Create"><i class="bi bi-plus-circle"></i></a>
     <a asp-controller="Profile" asp-action="Index"><i class="bi bi-person-circle"></i></a>
     <a asp-controller="Search" asp-action="Index"><i class="bi bi-search"></i></a>

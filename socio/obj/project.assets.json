@@ -10716,11 +10716,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\SOCIO\\socio\\socio.csproj",
+      "projectUniqueName": "E:\\Socio-A-Social-Media-Platform\\socio\\socio.csproj",
       "projectName": "socio",
-      "projectPath": "E:\\SOCIO\\socio\\socio.csproj",
+      "projectPath": "E:\\Socio-A-Social-Media-Platform\\socio\\socio.csproj",
       "packagesPath": "C:\\Users\\HP\\.nuget\\packages\\",
-      "outputPath": "E:\\SOCIO\\socio\\obj\\",
+      "outputPath": "E:\\Socio-A-Social-Media-Platform\\socio\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\HP\\AppData\\Roaming\\NuGet\\NuGet.Config"

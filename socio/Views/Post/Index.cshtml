@@ -23,11 +23,6 @@
     var postuserid = post?.UserId ?? "";
     var currentUser = CurrentUser?.Name ?? "";
     var currentuserid = CurrentUser?.Id ?? "";
-
-
-}
-@{
-    Console.WriteLine($"CurrentUser: {currentuserid}, PostUser: {postuserid}");
 }
 
 
@@ -160,6 +155,53 @@
         padding: 6px 15px;
     }
 
+    .comments {
+        max-height: 300px;
+        /* Increased height */
+        overflow-y: auto;
+        margin-top: 10px;
+    }
+
+    .comment {
+        display: flex;
+        justify-content: space-between;
+        /* Username + comment on left, delete button right */
+        align-items: center;
+        font-size: 14px;
+        padding: 6px 10px;
+        margin-bottom: 6px;
+        border-radius: 5px;
+        @* background-color: #f9f9f9; *@
+    }
+
+    .comment-text {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        /* space between username and comment */
+        flex: 1;
+    }
+
+    .comment strong {
+        font-weight: 600;
+    }
+
+    .delete-comment-btn {
+        background-color: #d9363e;
+        color: #fff;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 12px;
+        margin-left: 10px;
+    }
+
+    .delete-comment-btn:hover {
+        background-color: #d9363e;
+    }
+
+
     @@media(max-width: 768px) {
         .post-container {
             margin: 20px 10px;
@@ -201,17 +243,25 @@
 
         <div class="likes-count" id="likesCount">@postlikes likes</div>
 
-        <!-- Comments -->
         <div class="comments" id="commentsSection">
             @foreach (var c in comments)
             {
-                <div class="comment">
-                    <a href="@Url.Action("ViewProfile", "Profile", new { id = c.UserId })">
-                        <strong>@c.CommentUserName</strong>
-                    </a> @c.Content
+                <div class="comment" data-commentid="@c.CommentId">
+                    <div class="comment-text">
+                        <a href="@Url.Action("ViewProfile", "Profile", new { id = c.UserId })">
+                            <strong>@c.CommentUserName</strong>
+                        </a>
+                        <span>@c.Content</span>
+                    </div>
+
+                    @if (currentuserid?.Trim() == c.UserId?.Trim())
+                    {
+                        <button class="delete-comment-btn">Delete</button>
+                    }
                 </div>
             }
         </div>
+
 
         <!-- Add Comment -->
         <div class="add-comment">
@@ -230,16 +280,13 @@
                 </form>
             </div>
         }
-
     </div>
 </div>
 
-
-
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-
 <script>
     $(document).ready(function () {
+        var postid = @postid;
         var $commentsSection = $('#commentsSection');
         var $input = $('#commentInput');
         var $postBtn = $('#postBtn');
@@ -249,107 +296,129 @@
 
         var liked = false;
         var disliked = false;
-        var likes = parseInt("@postlikes");
 
+        // Escape HTML to prevent XSS
         function escapeHtml(unsafe) {
             return unsafe.replace(/[&<>"'/]/g, function (m) {
                 return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;", "/": "&#x2F;" }[m];
             });
         }
 
+        // Update like/dislike UI
+        function updateReactionUI(res) {
+            $likesCountEl.text(res.likes + ' likes');
+            $likeBtn.toggleClass('bi-heart-fill', res.liked)
+                .toggleClass('bi-heart', !res.liked)
+                .css('color', res.liked ? '#e0245e' : '#262626');
+            $dislikeBtn.toggleClass('bi-hand-thumbs-down-fill', res.disliked)
+                .toggleClass('bi-hand-thumbs-down', !res.disliked)
+                .css('color', res.disliked ? '#1e90ff' : '#262626');
+            liked = res.liked;
+            disliked = res.disliked;
+        }
+
+        // CSRF token
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        // Like button click
+        $likeBtn.click(function () {
+            $.ajax({
+                url: '/Post/Like',
+                type: 'POST',
+                data: { postId: postid },
+                headers: { 'RequestVerificationToken': token },
+                success: function (res) {
+                    if (res.success) updateReactionUI(res);
+                    else alert('Error liking post.');
+                },
+                error: function (err) { console.error(err); alert('Server error.'); }
+            });
+        });
+
+        // Dislike button click
+        $dislikeBtn.click(function () {
+            $.ajax({
+                url: '/Post/DisLike',
+                type: 'POST',
+                data: { postId: postid },
+                headers: { 'RequestVerificationToken': token },
+                success: function (res) {
+                    if (res.success) updateReactionUI(res);
+                    else alert('Error disliking post.');
+                },
+                error: function (err) { console.error(err); alert('Server error.'); }
+            });
+        });
+
+        // Load initial reaction state
+        $.get('/Post/GetUserReaction', { postId: postid }, function (res) {
+            if (res.success) updateReactionUI(res);
+        });
+
         function postComment() {
             var text = $input.val().trim();
             if (!text) return;
-            var $div = $('<div>').addClass('comment').html('<strong>you</strong> ' + escapeHtml(text));
-            $commentsSection.append($div);
-            $input.val('');
-            $commentsSection.scrollTop($commentsSection[0].scrollHeight);
+
+            $.ajax({
+                url: '/Post/AddComment',
+                type: 'POST',
+                data: { postId: postid, content: text },
+                headers: { 'RequestVerificationToken': token },
+                success: function (res) {
+                    if (res.success) {
+                        var c = res.comment;
+
+                        var username = c.CommentUserName || "Unknown";
+                        var content = c.Content || "";
+
+                        // Create new comment div
+                        var $div = $('<div>').addClass('comment').attr('data-commentid', c.CommentId);
+
+                        var $commentText = $('<div>').addClass('comment-text')
+                            .append('<a href="/Profile/ViewProfile/' + c.UserId + '"><strong>' + escapeHtml(username) + '</strong></a>')
+                            .append('<span>' + escapeHtml(content) + '</span>');
+
+                        $div.append($commentText);
+
+                        // Add delete button if current user is comment owner
+                        if (c.UserId === "@currentuserid") {
+                            $div.append('<button class="delete-comment-btn">Delete</button>');
+                        }
+
+                        $commentsSection.append($div);
+                        $input.val('');
+                        $commentsSection.scrollTop($commentsSection[0].scrollHeight);
+                    } else {
+                        alert(res.message || 'Error posting comment.');
+                    }
+                }
+                ,
+                error: function (err) {
+                    console.error(err);
+                    alert('Server error.');
+                }
+            });
         }
 
+
         $postBtn.click(postComment);
+        $input.keydown(function (e) { if (e.key === 'Enter') { e.preventDefault(); postComment(); } });
 
-        $input.keydown(function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                postComment();
-            }
-        });
+        $commentsSection.on('click', '.delete-comment-btn', function () {
+            var $commentDiv = $(this).closest('.comment');
+            var commentId = $commentDiv.data('commentid');
 
-        $likeBtn.click(function () {
-            var action = liked ? '/Post/DisLike' : '/Post/Like';
             $.ajax({
-                url: action,
+                url: '/Post/DeleteComment',
                 type: 'POST',
-                data: { postId: postid },
-                headers: { 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() },
-                success: function (response) {
-                    if (response.success) {
-                        liked = !liked;
-                        if (liked) {
-                            likes++;
-                            $likeBtn.removeClass('bi-heart').addClass('bi-heart-fill').css('color', '#e0245e');
-                            if (disliked) {
-                                disliked = false;
-                                likes++; // adjust likes if previously disliked
-                                $dislikeBtn.removeClass('bi-hand-thumbs-down-fill').addClass('bi-hand-thumbs-down').css('color', '#262626');
-                            }
-                        } else {
-                            likes--;
-                            $likeBtn.removeClass('bi-heart-fill').addClass('bi-heart').css('color', '#262626');
-                        }
-                        $likesCountEl.text(likes + ' likes');
-                    }
+                data: { commentId: commentId },
+                headers: { 'RequestVerificationToken': token },
+                success: function (res) {
+                    if (res.success) $commentDiv.remove();
+                    else alert(res.message || 'Error deleting comment.');
                 },
-                error: function (err) { console.error(err); }
+                error: function (err) { console.error(err); alert('Server error.'); }
             });
-        });
-
-        $dislikeBtn.click(function () {
-            var action = disliked ? '/Post/Like' : '/Post/DisLike';
-            $.ajax({
-                url: action,
-                type: 'POST',
-                data: { postId: postid },
-                headers: { 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() },
-                success: function (response) {
-                    if (response.success) {
-                        disliked = !disliked;
-                        if (disliked) {
-                            likes--;
-                            $dislikeBtn.removeClass('bi-hand-thumbs-down').addClass('bi-hand-thumbs-down-fill').css('color', '#1e90ff');
-                            if (liked) {
-                                liked = false;
-                                likes--;
-                                $likeBtn.removeClass('bi-heart-fill').addClass('bi-heart').css('color', '#262626');
-                            }
-                        } else {
-                            likes++;
-                            $dislikeBtn.removeClass('bi-hand-thumbs-down-fill').addClass('bi-hand-thumbs-down').css('color', '#262626');
-                        }
-                        $likesCountEl.text(likes + ' likes');
-                    }
-                },
-                error: function (err) { console.error(err); }
-            });
-        });
-
-
-        $dislikeBtn.click(function () {
-            if (!disliked) {
-                likes--;
-                $dislikeBtn.removeClass('bi-hand-thumbs-down').addClass('bi-hand-thumbs-down-fill').css('color', '#1e90ff');
-                if (liked) {
-                    liked = false;
-                    $likeBtn.removeClass('bi-heart-fill').addClass('bi-heart').css('color', '#262626');
-                    likes--;
-                }
-                disliked = true;
-            } else {
-                likes++;
-                $dislikeBtn.removeClass('bi-hand-thumbs-down-fill').addClass('bi-hand-thumbs-down').css('color', '#262626');
-                disliked = false;
-            }
-            $likesCountEl.text(likes + ' likes');
         });
     });
-</script>
+</script> 

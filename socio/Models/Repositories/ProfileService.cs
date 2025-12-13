@@ -16,20 +16,39 @@ namespace SocioApp.Services
         private readonly Cloudinary _cloudinary;
         private readonly ILogger<ProfileService> _logger;
 
-        public ProfileService(ApplicationDbContext context, Cloudinary cloudinary, ILogger<ProfileService> logger)
+        private readonly IConfiguration _configuration;
+        public ProfileService(ApplicationDbContext context, Cloudinary cloudinary, ILogger<ProfileService> logger, IConfiguration configuration)
         {
             _context = context;
             _cloudinary = cloudinary;
             _logger = logger;
+            _configuration = configuration;
         }
-
         private SqlConnection GetConnection()
         {
-            var connection = (SqlConnection)_context.Database.GetDbConnection();
-            if (connection.State != System.Data.ConnectionState.Open)
-                connection.Open();
-            return connection;
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new InvalidOperationException("Database connection string is not configured.");
+
+            return new SqlConnection(connectionString);
         }
+
+        // private SqlConnection GetConnection()
+        // {
+        //     var connection = (SqlConnection)_context.Database.GetDbConnection();
+        //     if (connection.State != System.Data.ConnectionState.Open)
+        //         connection.Open();
+        //     return connection;
+        // }
+
+        // private SqlConnection GetConnection()
+        // {
+        //     var connectionString = _configuration.GetConnectionString("DefaultConnection");
+        //     if (string.IsNullOrWhiteSpace(connectionString))
+        //         throw new InvalidOperationException("Database connection string is not configured.");
+
+        //     return new SqlConnection(connectionString);
+        // }
 
         private async Task<string?> UploadProfileImageAsync(IFormFile? imageFile)
         {
@@ -83,7 +102,6 @@ WHERE [Id] = @UserId AND [IsBanned] = 0";
 
                 if (profile == null) return null;
 
-                // Fetch post list separately
                 var postsSql = @"
 SELECT PostId AS Id, MediaUrl
 FROM Posts
@@ -99,6 +117,65 @@ ORDER BY CreatedAt DESC";
             {
                 _logger.LogError(ex, "Error fetching profile for user {UserId}", userId);
                 throw;
+            }
+        }
+
+        public async Task<ProfileViewModel?> GetProfilebyidFeed(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                _logger.LogWarning("GetProfilebyidAsync called with empty userId");
+                return null;
+            }
+
+            try
+            {
+                using var connection = GetConnection();
+                userId = userId.Trim();
+
+                var sql = @"
+            SELECT 
+                [Id], 
+                COALESCE([Name], [UserName], 'Unknown') AS Username, -- Fallback to UserName if Name is null
+                [Bio], 
+                COALESCE([ProfilePicture], '') AS ProfileImage, 
+                [Email],
+                ISNULL([IsBanned], 0) AS IsBanned,
+                (SELECT COUNT(*) FROM Posts WHERE UserId = u.[Id]) AS PostsCount
+            FROM [AspNetUsers] u
+            WHERE [Id] = @UserId";
+
+                var profile = await connection.QuerySingleOrDefaultAsync<ProfileViewModel>(
+                    sql,
+                    new { UserId = userId }
+                );
+
+                if (profile == null)
+                {
+                    _logger.LogWarning("Profile not found for user {UserId}", userId);
+                    return null;
+                }
+
+                // Ensure ProfileImage has a default value
+                if (string.IsNullOrWhiteSpace(profile.ProfileImage))
+                {
+                    profile.ProfileImage = "/images/defaultprofile.png";
+                }
+
+                return profile;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching profile for user {UserId}", userId);
+
+                // Return a default profile instead of throwing
+                return new ProfileViewModel
+                {
+                    Id = userId,
+                    Username = "Unknown User",
+                    ProfileImage = "/images/defaultprofile.png",
+                    PostsCount = 0
+                };
             }
         }
         public async Task<ProfileViewModel?> GetProfilebyidAsync(string userId)
@@ -297,7 +374,6 @@ ORDER BY CreatedAt DESC";
             }
         }
 
-        // Admin version: include banned users
         public async Task<IEnumerable<ProfileViewModel>> SearchUsersForAdminAsync(string searchTerm)
         {
             try

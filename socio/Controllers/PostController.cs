@@ -125,33 +125,156 @@ namespace SocioApp.Controllers
             return RedirectToAction("Index");
         }
 
+        // [HttpPost]
+        // public async Task<IActionResult> Like(int postId)
+        // {
+        //     try
+        //     {
+        //         var result = await _postService.LikePostAsync(postId);
+        //         return Json(new { success = result });
+        //     }
+        //     catch
+        //     {
+        //         return Json(new
+        //         { success = false, message = "An error occurred while liking the post." });
+        //     }
+        // }
+
+        // [HttpPost]
+        // public async Task<IActionResult> DisLike(int postId)
+        // {
+        //     try
+        //     {
+        //         var result = await _postService.DislikePostAsync(postId);
+        //         return Json(new { success = result });
+        //     }
+        //     catch
+        //     {
+        //         return Json(new 
+        //         { success = false, message = "An error occurred while disliking the post." });
+        //     }
+        // }
+
         [HttpPost]
         public async Task<IActionResult> Like(int postId)
         {
-            try
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Json(new { success = false });
+            Console.WriteLine(user);
+            var result = await _postService.LikePostAsync(postId, user.Id);
+            Console.WriteLine(result);
+            var post = await _postService.GetPostByIdAsync(postId);
+            var userReaction = await _postService.GetUserReactionAsync(postId, user.Id);
+            Console.WriteLine(post);
+            Console.WriteLine(userReaction);
+            return Json(new
             {
-                var result = await _postService.LikePostAsync(postId);
-                return Json(new { success = result });
-            }
-            catch
-            {
-                return Json(new
-                { success = false, message = "An error occurred while liking the post." });
-            }
+                success = result,
+                likes = post?.LikesCount,
+                dislikes = post?.DislikesCount,
+                liked = userReaction == "Like",
+                disliked = userReaction == "Dislike"
+            });
         }
+
 
         [HttpPost]
         public async Task<IActionResult> DisLike(int postId)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Json(new { success = false });
+
+            var result = await _postService.DislikePostAsync(postId, user.Id);
+
+            var post = await _postService.GetPostByIdAsync(postId);
+            var userReaction = await _postService.GetUserReactionAsync(postId, user.Id);
+
+            return Json(new
+            {
+                success = result,
+                likes = post?.LikesCount,
+                dislikes = post?.DislikesCount,
+                liked = userReaction == "Like",
+                disliked = userReaction == "Dislike"
+            });
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetUserReaction(int postId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Json(new { success = false });
+
+            var userReaction = await _postService.GetUserReactionAsync(postId, user.Id);
+            var post = await _postService.GetPostByIdAsync(postId);
+
+            return Json(new
+            {
+                success = true,
+                likes = post?.LikesCount ?? 0,
+                dislikes = post?.DislikesCount ?? 0,
+                liked = userReaction == "Like",
+                disliked = userReaction == "Dislike"
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddComment(int postId, string content)
+        {
+            if (string.IsNullOrWhiteSpace(content))
+                return Json(new { success = false, message = "Comment cannot be empty." });
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Json(new { success = false });
+
             try
             {
-                var result = await _postService.DislikePostAsync(postId);
-                return Json(new { success = result });
+                var comment = new Comment
+                {
+                    PostId = postId,
+                    UserId = user.Id,
+                    Content = content
+                };
+
+                comment = await _commentService.AddCommentAsync(comment);
+                // Console.WriteLine("done comment");
+                // Console.WriteLine(user.UserName +"comment");
+                // Console.WriteLine(comment.CommentId +"comment");
+                // Console.WriteLine(comment.Content);
+                // Return the newly created comment for UI
+                return Json(new
+                {
+                    success = true,
+                    comment = new
+                    {
+                        comment.CommentId,
+                        comment.UserId,
+                        CommentUserName = user.UserName, // This is important
+                        comment.Content,
+                        CreatedAt = comment.CreatedAt.ToString("g")
+                    }
+                });
+
             }
             catch
             {
-                return Json(new 
-                { success = false, message = "An error occurred while disliking the post." });
+                return Json(new { success = false, message = "Error adding comment." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteComment(int commentId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Json(new { success = false });
+
+            try
+            {
+                var success = await _commentService.DeleteCommentAsync(commentId, user.Id);
+                return Json(new { success });
+            }
+            catch
+            {
+                return Json(new { success = false, message = "Error deleting comment." });
             }
         }
 

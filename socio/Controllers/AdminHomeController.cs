@@ -35,16 +35,16 @@ namespace socio.Controllers
                 PostImage = "~/images/feedimg2.png",
                 TimeAgo = "2 days ago",
                 Likes = 125,
-                Content = "Sunday vibes ☀️ Coffee, music, and a lazy afternoon.",
+                Content = "Sunday vibes  Coffee, music, and a lazy afternoon.",
                 Comments = new List<dynamic> {
-                    new { Username="amy_21", Text="Love this! 😍" },
+                    new { Username="amy_21", Text="Love this! " },
                     new { Username="mike_dev", Text="Perfect chill day setup!" },
-                    new { Username="alex", Text="Great photo 📸" },
+                    new { Username="alex", Text="Great photo " },
                     new { Username="sarah", Text="I need this kind of Sunday!" }
                 }
             };
 
-            ViewData["Post"] = post;
+            ViewData["Post"] = post!;
             return View();
         }
 
@@ -68,7 +68,7 @@ namespace socio.Controllers
                     "~/images/feedimg.png",
                     "~/images/profile.png"
                 }
-            };
+            }; 
 
             ViewData["Profile"] = profile;
             return View();
@@ -79,7 +79,7 @@ namespace socio.Controllers
         {
             var comments = new List<dynamic>
     {
-        new { Id = 1, PostId = 101, PostTitle = "Sunday Vibes", Text = "Love this! 😍", TimeAgo = "2 days ago" },
+        new { Id = 1, PostId = 101, PostTitle = "Sunday Vibes", Text = "Love this! ", TimeAgo = "2 days ago" },
         new { Id = 2, PostId = 102, PostTitle = "Morning Run", Text = "Great job!", TimeAgo = "5 days ago" },
         new { Id = 3, PostId = 103, PostTitle = "Coffee Time", Text = "Yummy!", TimeAgo = "1 week ago" }
     };
@@ -115,11 +115,9 @@ namespace socio.Controllers
             new { Id = 6, Username = "nina_ahmad", ProfileImage = "~/images/profile.png", PostCount = 6 }
         };
 
-        // GET: Search Page
         [HttpGet]
         public IActionResult Search()
         {
-            // Show all users initially
             ViewData["Users"] = Users;
             return View();
         }
