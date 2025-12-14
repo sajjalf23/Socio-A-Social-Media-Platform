@@ -49,6 +49,7 @@ namespace SocioApp.Controllers
  
                 postsView.Add(new
                 {
+                    postownerid = post.UserId,
                     PostId = post.PostId,
                     Username = profile?.Username ?? "Unknown",
                     ProfileImage = !string.IsNullOrWhiteSpace(profile?.ProfileImage)

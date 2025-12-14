@@ -1,10 +1,3 @@
-@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Search Users";
-
-    var users = ViewData["Users"] as List<dynamic> ?? new List<dynamic>();
-    var searchQuery = ViewData["SearchQuery"] as string ?? "";
-}
 @section Styles {
     <style>
         .search-heading {
@@ -151,8 +144,27 @@
                 width: 70%;
             }
         }
+
+        .user-info a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .user-info a:hover {
+            text-decoration: none;
+            /* optional, prevent underline on hover */
+            color: inherit;
+            /* optional, keep same color */
+        }
     </style>
 }
+@model List<SocioApp.Models.ProfileViewModel>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Search Users";
+    var searchQuery = ViewData["SearchQuery"] as string ?? "";
+}
+
 <div class="search-bar-wrapper">
     <form method="get" asp-action="Index" asp-controller="Search">
         <input type="text" name="query" placeholder="Search by username..." value="@searchQuery" />
@@ -161,27 +173,7 @@
 </div>
 
 <div class="users-container-wrapper">
-    <div class="users-container">
-        @if (users.Count == 0)
-        {
-            <p style="text-align:center;">No users found.</p>
-        }
-        else
-        {
-            @foreach (var user in users)
-            {
-                <div class="user-card">
-                    <div class="user-info">
-                        <img src="@Url.Content(user.ProfileImage)" alt="@user.Username" />
-                        <a href="@Url.Action("Index", "Profile", new { id = user.Id })">
-                            <div class="text">
-                                <h4>@user.Username</h4>
-                                <p>@user.PostCount posts</p>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-            }
-        }
+    <div class="users-container" id="searchResults">
+        @await Html.PartialAsync("SearchResult", Model)
     </div>
 </div>

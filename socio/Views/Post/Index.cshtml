@@ -293,6 +293,8 @@
         var $likesCountEl = $('#likesCount');
         var $likeBtn = $('#likeBtn');
         var $dislikeBtn = $('#dislikeBtn');
+        var postuserid = "@postuserid";
+
 
         var liked = false;
         var disliked = false;
@@ -362,15 +364,15 @@
             $.ajax({
                 url: '/Post/AddComment',
                 type: 'POST',
-                data: { postId: postid, content: text },
+                data: { postId: postid, content: text ,postownerid : postuserid},
                 headers: { 'RequestVerificationToken': token },
                 success: function (res) {
                     if (res.success) {
-                        var c = res.comment;
+                        var c = res?.comment;
 
-                        var username = c.CommentUserName || "Unknown";
-                        var content = c.Content || "";
-
+                        var username = c?.commentUserName || "Unknown";
+                        var content = c.content || "";
+ 
                         // Create new comment div
                         var $div = $('<div>').addClass('comment').attr('data-commentid', c.CommentId);
 

@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toast Notification Tester</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background: #f5f5f5;
+            color: #333;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .demo-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .controls {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .preview {
+            flex: 2;
+            min-width: 300px;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .preview-area {
+            height: 400px;
+            overflow-y: auto;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: #fafafa;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+        }
+        
+        .btn-success:hover {
+            background: #219653;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .toast-demo {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        
+        .toast {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-width: 280px;
+            max-width: 360px;
+            animation: slideIn 0.3s ease;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .toast-content {
+            color: #000;
+            padding-right: 12px;
+        }
+        
+        .toast-content a {
+            color: #000;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+        
+        .toast-content em {
+            color: #000;
+            font-style: italic;
+            font-weight: 500;
+            background: #f5f5f5;
+            padding: 1px 4px;
+            border-radius: 2px;
+        }
+        
+        .close-btn {
+            cursor: pointer;
+            color: #333;
+            font-size: 20px;
+            font-weight: 300;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        
+        .close-btn:hover {
+            color: #000;
+            background: #f5f5f5;
+            border-radius: 50%;
+        }
+        
+        @keyframes slideIn {
+            0% {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .toast-exit {
+            animation: slideOut 0.3s ease forwards;
+        }
+        
+        @keyframes slideOut {
+            0% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+        
+        .design-options {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .design-btn {
+            display: inline-block;
+            padding: 8px 15px;
+            margin: 5px;
+            background: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .design-btn:hover {
+            background: #d5dbdb;
+        }
+        
+        .design-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .code-preview {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+        
+        .code-preview pre {
+            white-space: pre-wrap;
+        }
+        
+        .highlight {
+            background: yellow;
+            padding: 2px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Toast Notification Tester</h1>
+            <p class="description">Test different toast notification designs and copy the code for your project</p>
+        </header>
+        
+        <div class="demo-area">
+            <div class="controls">
+                <h2>Test Toast Notifications</h2>
+                
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" value="xyz">
+                </div>
+                
+                <div class="form-group">
+                    <label for="comment">Comment Text:</label>
+                    <input type="text" id="comment" value="abc">
+                </div>
+                
+                <div class="form-group">
+                    <label for="postType">Post Type:</label>
+                    <input type="text" id="postType" value="post">
+                </div>
+                
+                <div class="form-group">
+                    <label>Notification Type:</label>
+                    <select id="notificationType">
+                        <option value="comment">Commented on your post</option>
+                        <option value="like">Liked your post</option>
+                        <option value="share">Shared your post</option>
+                        <option value="follow">Started following you</option>
+                    </select>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn" id="testToast">Test Toast</button>
+                    <button class="btn btn-success" id="showCode">Show Code</button>
+                </div>
+                
+                <div class="design-options">
+                    <h3>Design Options</h3>
+                    <p>Click to preview different styles:</p>
+                    <div>
+                        <span class="design-btn active" data-style="simple">Simple</span>
+                        <span class="design-btn" data-style="modern">Modern</span>
+                        <span class="design-btn" data-style="minimal">Minimal</span>
+                        <span class="design-btn" data-style="dark">Dark Mode</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="preview">
+                <h2>Live Preview</h2>
+                <p>Toasts will appear here when you click "Test Toast":</p>
+                
+                <div class="preview-area" id="previewArea">
+                    <!-- Toasts will appear here -->
+                    <div style="text-align: center; color: #999; padding: 50px 0;">
+                        <i class="fas fa-bell" style="font-size: 48px; margin-bottom: 15px;"></i>
+                        <p>No notifications yet. Click "Test Toast" to see a preview.</p>
+                    </div>
+                </div>
+                
+                <div id="codeOutput" class="code-preview" style="display: none;">
+                    <h3>Code for Your Project:</h3>
+                    <pre id="codeContent"></pre>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Toast Notification Tester • Use this to preview and customize toast designs for your project</p>
+        </footer>
+    </div>
+    
+    <div class="toast-demo" id="toastContainer">
+        <!-- Real toasts will appear here (top-right corner) -->
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            let currentStyle = 'simple';
+            
+            // Test toast button
+            $('#testToast').click(function() {
+                const username = $('#username').val() || 'xyz';
+                const comment = $('#comment').val() || 'abc';
+                const postType = $('#postType').val() || 'post';
+                const notificationType = $('#notificationType').val();
+                
+                let message = '';
+                
+                switch(notificationType) {
+                    case 'comment':
+                        message = `<a href="#">${username}</a> commented <em>"${comment}"</em> on your <a href="#">${postType}</a>`;
+                        break;
+                    case 'like':
+                        message = `<a href="#">${username}</a> liked your <a href="#">${postType}</a>`;
+                        break;
+                    case 'share':
+                        message = `<a href="#">${username}</a> shared your <a href="#">${postType}</a>`;
+                        break;
+                    case 'follow':
+                        message = `<a href="#">${username}</a> started following you`;
+                        break;
+                }
+                
+                showToast(message);
+            });
+            
+            // Show code button
+            $('#showCode').click(function() {
+                const code = generateCode();
+                $('#codeContent').html(code);
+                $('#codeOutput').show();
+            });
+            
+            // Design options
+            $('.design-btn').click(function() {
+                $('.design-btn').removeClass('active');
+                $(this).addClass('active');
+                currentStyle = $(this).data('style');
+                applyStyle(currentStyle);
+            });
+            
+            // Function to show toast
+            function showToast(htmlMessage) {
+                const toastId = 'toast-' + Date.now();
+                const toast = $(`
+                    <div class="toast" id="${toastId}">
+                        <span class="toast-content">${htmlMessage}</span>
+                        <button class="close-btn">&times;</button>
+                    </div>
+                `);
+                
+                // Close on button click
+                toast.find('.close-btn').click(function() {
+                    $(this).closest('.toast').addClass('toast-exit');
+                    setTimeout(() => toast.remove(), 300);
+                });
+                
+                // Add to container
+                $('#toastContainer').append(toast);
+                
+                // Also add to preview area for demo
+                const previewToast = toast.clone();
+                previewToast.find('.close-btn').click(function() {
+                    $(this).closest('.toast').addClass('toast-exit');
+                    setTimeout(() => previewToast.remove(), 300);
+                });
+                $('#previewArea').append(previewToast);
+                
+                // Remove oldest toast if more than 3
+                if ($('#toastContainer .toast').length > 3) {
+                    $('#toastContainer .toast').first().addClass('toast-exit');
+                    setTimeout(() => $('#toastContainer .toast').first().remove(), 300);
+                }
+            }
+            
+            // Apply different styles
+            function applyStyle(style) {
+                $('.toast').removeClass('simple modern minimal dark');
+                $('.toast').addClass(style);
+                
+                switch(style) {
+                    case 'simple':
+                        // Already applied
+                        break;
+                    case 'modern':
+                        $('<style id="styleOverride">.toast { border-left: 4px solid #3498db; background: #f8fafc; }</style>').appendTo('head');
+                        break;
+                    case 'minimal':
+                        $('<style id="styleOverride">.toast { border: 1px solid #e0e0e0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }</style>').appendTo('head');
+                        break;
+                    case 'dark':
+                        $('<style id="styleOverride">.toast { background: #2c3e50; color: white; border: none; } .toast-content { color: white; } .toast-content a { color: #3498db; } .toast-content em { background: #34495e; color: #ecf0f1; } .close-btn { color: #bdc3c7; }</style>').appendTo('head');
+                        break;
+                }
+            }
+            
+            // Generate code for project
+            function generateCode() {
+                return `<!-- Add this to your HTML where you want toasts to appear -->
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<style>
+.toast-message {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 280px;
+  max-width: 360px;
+  animation: slideIn 0.3s ease;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.toast-message span:first-child {
+  color: #000;
+  padding-right: 12px;
+}
+
+.toast-message span:first-child a {
+  color: #000;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.toast-message span:first-child em {
+  color: #000;
+  font-style: italic;
+  font-weight: 500;
+  background: #f5f5f5;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.toast-message .close-btn {
+  cursor: pointer;
+  color: #333;
+  font-size: 20px;
+  font-weight: 300;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.toast-message .close-btn:hover {
+  color: #000;
+  background: #f5f5f5;
+  border-radius: 50%;
+}
+
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.toast-message.toast-exit {
+  animation: slideOut 0.3s ease forwards;
+}
+
+@keyframes slideOut {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+</style>
+
+<script>
+// SignalR connection for real-time notifications
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/notificationHub")
+    .build();
+
+connection.start().then(() => console.log("SignalR connected"))
+    .catch(err => console.error(err.toString()));
+
+function showToast(htmlMessage) {
+    const toast = $(\`
+        <div class="toast-message">
+            <span>\${htmlMessage}</span>
+            <button class="close-btn">&times;</button>
+        </div>
+    \`);
+
+    // Close on button click
+    toast.find('.close-btn').click(function() {
+        $(this).closest('.toast-message').addClass('toast-exit');
+        setTimeout(() => toast.remove(), 300);
+    });
+
+    $('#toast-container').append(toast);
+}
+
+// Receive notification from server
+connection.on("ReceiveNotification", function(message) {
+    showToast(message);
+});
+<\/script>`;
+            }
+        });
+    </script>
+</body>
+</html>

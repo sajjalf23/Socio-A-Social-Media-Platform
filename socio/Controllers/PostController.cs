@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using SocioApp.Data;
 using SocioApp.Models;
 using System;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using System.Collections.Generic;
 using SocioApp.Services;
+using SocioApp.Hubs;
 
 
 namespace SocioApp.Controllers
@@ -23,13 +25,16 @@ namespace SocioApp.Controllers
 
         private readonly ICommentService _commentService;
 
+        private readonly IHubContext<NotificationHub> _hubContext;
+
         public PostController(UserManager<ApplicationUser> userManager, IPostService postService,
-        ICommentService commentService, IProfileService profileService)
+        ICommentService commentService, IProfileService profileService, IHubContext<NotificationHub> hubContext)
         {
             _userManager = userManager;
             _postService = postService;
             _commentService = commentService;
             _profileService = profileService;
+            _hubContext = hubContext;
         }
         [HttpGet]
         public async Task<IActionResult> Index(int id = 1)
@@ -75,7 +80,8 @@ namespace SocioApp.Controllers
             await _postService.CreatePostAsync(user.Id, caption, imagefile);
 
             TempData["Message"] = " Post created successfully!";
-            return RedirectToAction("Index");
+            return RedirectToAction("Index", "UserHome");
+
         }
 
 
@@ -108,7 +114,7 @@ namespace SocioApp.Controllers
             TempData[success ? "Message" : "Error"] =
                 success ? "Post updated successfully!" : "Could not update post.";
 
-            return RedirectToAction("Index");
+             return RedirectToAction("Index", "UserHome");
         }
 
         [HttpPost]
@@ -122,38 +128,8 @@ namespace SocioApp.Controllers
             TempData[success ? "Message" : "Error"] =
                 success ? "Post deleted successfully!" : "Could not delete post.";
 
-            return RedirectToAction("Index");
+             return RedirectToAction("Index", "UserHome");
         }
-
-        // [HttpPost]
-        // public async Task<IActionResult> Like(int postId)
-        // {
-        //     try
-        //     {
-        //         var result = await _postService.LikePostAsync(postId);
-        //         return Json(new { success = result });
-        //     }
-        //     catch
-        //     {
-        //         return Json(new
-        //         { success = false, message = "An error occurred while liking the post." });
-        //     }
-        // }
-
-        // [HttpPost]
-        // public async Task<IActionResult> DisLike(int postId)
-        // {
-        //     try
-        //     {
-        //         var result = await _postService.DislikePostAsync(postId);
-        //         return Json(new { success = result });
-        //     }
-        //     catch
-        //     {
-        //         return Json(new 
-        //         { success = false, message = "An error occurred while disliking the post." });
-        //     }
-        // }
 
         [HttpPost]
         public async Task<IActionResult> Like(int postId)
@@ -218,7 +194,7 @@ namespace SocioApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddComment(int postId, string content)
+        public async Task<IActionResult> AddComment(int postId, string content,string postownerid)
         {
             if (string.IsNullOrWhiteSpace(content))
                 return Json(new { success = false, message = "Comment cannot be empty." });
@@ -234,13 +210,13 @@ namespace SocioApp.Controllers
                     UserId = user.Id,
                     Content = content
                 };
-
                 comment = await _commentService.AddCommentAsync(comment);
-                // Console.WriteLine("done comment");
-                // Console.WriteLine(user.UserName +"comment");
-                // Console.WriteLine(comment.CommentId +"comment");
-                // Console.WriteLine(comment.Content);
-                // Return the newly created comment for UI
+                if (postownerid != null && postownerid != user.Id)
+                {
+                    var message = $"<a href='/Profile/{user.Id}'>{user.UserName}</a> commented: \"{content}\" on your <a href='/Post/Index/{postId}'>post</a>";
+                    await _hubContext.Clients.User(postownerid.ToString())
+                        .SendAsync("ReceiveNotification", message);
+                }
                 return Json(new
                 {
                     success = true,

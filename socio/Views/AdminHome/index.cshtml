@@ -2,10 +2,15 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Admin Dashboard";
 
-    var usersLast7Days = ViewData["UsersLast7Days"] as List<int>;
-    var postsLast7Days = ViewData["PostsLast7Days"] as List<int>;
-    var commentsLast7Days = ViewData["CommentsLast7Days"] as List<int>;
-    var likesLast7Days = ViewData["LikesLast7Days"] as List<int>;
+    var usersLast7Days = ViewData["UsersLast7Days"] as List<int> ?? new List<int>();
+    var postsLast7Days = ViewData["PostsLast7Days"] as List<int> ?? new List<int>();
+    var commentsLast7Days = ViewData["CommentsLast7Days"] as List<int> ?? new List<int>();
+    var likesLast7Days = ViewData["LikesLast7Days"] as List<int> ?? new List<int>();
+
+    var totalUsers = ViewData["TotalUsers"] as int? ?? (usersLast7Days.Any() ? usersLast7Days.Last() : 0);
+    var totalPosts = ViewData["TotalPosts"] as int? ?? (postsLast7Days.Any() ? postsLast7Days.Last() : 0);
+    var totalComments = ViewData["TotalComments"] as int? ?? (commentsLast7Days.Any() ? commentsLast7Days.Last() : 0);
+    var totalLikes = ViewData["TotalLikes"] as int? ?? (likesLast7Days.Any() ? likesLast7Days.Last() : 0);
 
     Func<List<int>, string> calcDailyChange = (list) =>
     {
@@ -99,7 +104,7 @@
         <div class="col-6 col-md-3">
             <div class="widget-card">
                 <h4>Total Users</h4>
-                <h2>@usersLast7Days.Last()</h2>
+                <h2>@totalUsers</h2>
                 <div>@Html.Raw(usersChange)</div>
             </div>
         </div>
@@ -107,7 +112,7 @@
         <div class="col-6 col-md-3">
             <div class="widget-card">
                 <h4>Total Posts</h4>
-                <h2>@postsLast7Days.Last()</h2>
+                <h2>@totalPosts</h2>
                 <div>@Html.Raw(postsChange)</div>
             </div>
         </div>
@@ -115,7 +120,7 @@
         <div class="col-6 col-md-3">
             <div class="widget-card">
                 <h4>Total Comments</h4>
-                <h2>@commentsLast7Days.Last()</h2>
+                <h2>@totalComments</h2>
                 <div>@Html.Raw(commentsChange)</div>
             </div>
         </div>
@@ -123,7 +128,7 @@
         <div class="col-6 col-md-3">
             <div class="widget-card">
                 <h4>Total Likes</h4>
-                <h2>@likesLast7Days.Last()</h2>
+                <h2>@totalLikes</h2>
                 <div>@Html.Raw(likesChange)</div>
             </div>
         </div>
@@ -182,7 +187,10 @@
                 title: { display: false }
             },
             scales: {
-                y: { grid: { drawBorder: false } },
+                y: { 
+                    grid: { drawBorder: false },
+                    beginAtZero: true
+                },
                 x: { grid: { display: false } }
             }
         };
@@ -222,10 +230,17 @@
             });
         }
 
-        renderBarChart("usersChart", usersData, "#0095f6");
-        renderBarChart("postsChart", postsData, "#28a745");
-
-        renderLineChart("commentsChart", commentsData, "#ffc107");
-        renderLineChart("likesChart", likesData, "#e0245e");
+        if (usersData && usersData.length > 0) {
+            renderBarChart("usersChart", usersData, "#0095f6");
+        }
+        if (postsData && postsData.length > 0) {
+            renderBarChart("postsChart", postsData, "#28a745");
+        }
+        if (commentsData && commentsData.length > 0) {
+            renderLineChart("commentsChart", commentsData, "#ffc107");
+        }
+        if (likesData && likesData.length > 0) {
+            renderLineChart("likesChart", likesData, "#e0245e");
+        }
     </script>
 }

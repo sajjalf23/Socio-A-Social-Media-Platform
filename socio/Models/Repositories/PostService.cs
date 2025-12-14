@@ -25,9 +25,9 @@ namespace SocioApp.Services
             _cloudinary = cloudinary;
             _logger = logger;
             _configuration = configuration; // assign it
-           _connectionString = configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException(
-                    "DefaultConnection is missing from configuration.");
+            _connectionString = configuration.GetConnectionString("DefaultConnection")
+                 ?? throw new InvalidOperationException(
+                     "DefaultConnection is missing from configuration.");
         }
 
         private SqlConnection GetConnection()
@@ -198,18 +198,59 @@ namespace SocioApp.Services
             }
         }
 
+        // public async Task<bool> DeletePostAsync(int postId, string userId)
+        // {
+        //     try
+        //     {
+        //         using var connection = GetConnection();
+        //         var post = await connection.QuerySingleOrDefaultAsync<Post>(
+        //             "SELECT PostId, UserId, MediaUrl FROM Posts WHERE PostId = @PostId AND UserId = @UserId",
+        //             new { PostId = postId, UserId = userId }
+        //         );
+
+        //         if (post == null) return false;
+
+        //         if (!string.IsNullOrEmpty(post.MediaUrl))
+        //         {
+        //             string publicId = GetCloudinaryPublicId(post.MediaUrl);
+        //             if (!string.IsNullOrEmpty(publicId))
+        //             {
+        //                 await _cloudinary.DestroyAsync(new DeletionParams(publicId));
+        //             }
+        //         }
+
+        //         var sql = "DELETE FROM Posts WHERE PostId = @PostId AND UserId = @UserId";
+        //         var rows = await connection.ExecuteAsync(sql, new { PostId = postId, UserId = userId });
+
+        //         return rows > 0;
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         _logger.LogError(ex, "Error deleting post {PostId} for user {UserId}", postId, userId);
+        //         throw;
+        //     }
+        // }
+
         public async Task<bool> DeletePostAsync(int postId, string userId)
         {
+            using var connection = GetConnection();
+            await connection.OpenAsync();
+
+            using var transaction = connection.BeginTransaction();
+
             try
             {
-                using var connection = GetConnection();
                 var post = await connection.QuerySingleOrDefaultAsync<Post>(
                     "SELECT PostId, UserId, MediaUrl FROM Posts WHERE PostId = @PostId AND UserId = @UserId",
-                    new { PostId = postId, UserId = userId }
+                    new { PostId = postId, UserId = userId },
+                    transaction
                 );
 
-                if (post == null) return false;
-
+                if (post == null)
+                {
+                    transaction.Rollback();
+                    return false;
+                }
                 if (!string.IsNullOrEmpty(post.MediaUrl))
                 {
                     string publicId = GetCloudinaryPublicId(post.MediaUrl);
@@ -218,18 +259,33 @@ namespace SocioApp.Services
                         await _cloudinary.DestroyAsync(new DeletionParams(publicId));
                     }
                 }
+                await connection.ExecuteAsync(
+                    "DELETE FROM PostReactions WHERE PostId = @PostId",
+                    new { PostId = postId },
+                    transaction
+                );
+                await connection.ExecuteAsync(
+                    "DELETE FROM Comments WHERE PostId = @PostId",
+                    new { PostId = postId },
+                    transaction
+                );
+                var rows = await connection.ExecuteAsync(
+                    "DELETE FROM Posts WHERE PostId = @PostId AND UserId = @UserId",
+                    new { PostId = postId, UserId = userId },
+                    transaction
+                );
 
-                var sql = "DELETE FROM Posts WHERE PostId = @PostId AND UserId = @UserId";
-                var rows = await connection.ExecuteAsync(sql, new { PostId = postId, UserId = userId });
-
+                transaction.Commit();
                 return rows > 0;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting post {PostId} for user {UserId}", postId, userId);
+                transaction.Rollback();
+                _logger.LogError(ex, "Error deleting post {PostId}", postId);
                 throw;
             }
         }
+
 
 
 

@@ -350,29 +350,31 @@ ORDER BY CreatedAt DESC";
             }
         }
 
-        public async Task<IEnumerable<ProfileViewModel>> SearchUsersAsync(string searchTerm)
-        {
-            try
-            {
-                using var connection = GetConnection();
-                var sql = @"
-                    SELECT Id, UserName AS Username, Bio, ProfilePicture AS ProfileImage, Email, IsBanned,
-                           (SELECT COUNT(*) FROM Posts WHERE UserId = u.Id) AS PostsCount
-                    FROM AspNetUsers u
-                    WHERE IsBanned = 0 AND UserName LIKE @SearchTerm
-                    ORDER BY UserName ASC";
+       public async Task<IEnumerable<ProfileViewModel>> SearchUsersAsync(string searchTerm)
+{
+    try
+    {
+        using var connection = GetConnection();
 
-                var users = await connection.QueryAsync<ProfileViewModel>(
-                    sql, new { SearchTerm = $"%{searchTerm}%" });
+        var sql = @"
+            SELECT Id, UserName AS Username, Bio, ProfilePicture AS ProfileImage, Email, IsBanned,
+                   (SELECT COUNT(*) FROM Posts WHERE UserId = u.Id) AS PostsCount
+            FROM AspNetUsers u
+            WHERE IsBanned = 0 
+              AND LOWER(UserName) LIKE LOWER(@SearchTerm)
+            ORDER BY UserName ASC";
 
-                return users;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error searching users with term {SearchTerm}", searchTerm);
-                throw;
-            }
-        }
+        var users = await connection.QueryAsync<ProfileViewModel>(
+            sql, new { SearchTerm = $"%{searchTerm}%" });
+
+        return users;
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error searching users with term {SearchTerm}", searchTerm);
+        throw;
+    }
+}
 
         public async Task<IEnumerable<ProfileViewModel>> SearchUsersForAdminAsync(string searchTerm)
         {

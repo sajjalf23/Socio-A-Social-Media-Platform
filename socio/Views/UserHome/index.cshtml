@@ -132,6 +132,7 @@
 @{
     ViewData["Title"] = "Socio Feed";
     var posts = ViewData["Posts"] as List<dynamic>;
+   
 }
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -141,7 +142,8 @@
     @for (int i = 0; i < posts?.Count; i++)
     {
         var post = posts[i];
-        <div class="post" data-postid="@post.PostId">
+        @* <div class="post" data-postid="@post.PostId"> *@
+        <div class="post" data-postid="@post.PostId" data-ownerid="@post.postownerid">
             <div class="post-header">
                 <img src="@Url.Content(post.ProfileImage)" alt="Profile" />
                 <div>
@@ -209,6 +211,8 @@
             const $commentsDiv = $post.find('.comments');
             const $commentInput = $post.find('input');
             const $commentBtn = $post.find('.post-comment-btn');
+            const postOwnerId = $post.data('ownerid');
+
 
             function updateReactionUI(res) {
                 $likesCount.text((res.likes ?? 0) + ' likes');
@@ -236,7 +240,7 @@
                 const content = $commentInput.val()?.trim();
                 if (!content) return;
 
-                $.post('/Post/AddComment', { postId: postId, content: content, __RequestVerificationToken: token }, function (res) {
+                $.post('/Post/AddComment', { postId: postId, content: content, postownerid:postOwnerId , __RequestVerificationToken: token }, function (res) {
 
                     if (res.success && res.comment) {
                         const c = res.comment;

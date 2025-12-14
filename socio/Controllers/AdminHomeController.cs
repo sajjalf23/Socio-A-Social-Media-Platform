@@ -2,19 +2,34 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
-
+using SocioApp.Services;
 namespace socio.Controllers
 {
     
     [Authorize(policy: "AdminPages")]
     public class AdminHomeController : Controller
     {
-        public IActionResult Index()
+
+        private readonly IAdminService _adminService;
+        public AdminHomeController(IAdminService adminService)
         {
-            ViewData["UsersLast7Days"] = new List<int> { 100, 120, 130, 150, 170, 200, 220 };
-            ViewData["PostsLast7Days"] = new List<int> { 400, 380, 420, 450, 470, 500, 520 };
-            ViewData["CommentsLast7Days"] = new List<int> { 800, 7000, 830, 120, 870, 1000, 920 };
-            ViewData["LikesLast7Days"] = new List<int> { 200, 1250, 1900, 1350, 1400, 1550, 1500 };
+            _adminService = adminService;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            // Get real data from database
+            ViewData["UsersLast7Days"] = await _adminService.GetUsersLast7DaysAsync();
+            ViewData["PostsLast7Days"] = await _adminService.GetPostsLast7DaysAsync();
+            ViewData["CommentsLast7Days"] = await _adminService.GetCommentsLast7DaysAsync();
+            ViewData["LikesLast7Days"] = await _adminService.GetLikesLast7DaysAsync();
+
+            // Optional: Get total counts for display
+            var totals = await _adminService.GetTotalCountsAsync();
+            ViewData["TotalUsers"] = totals["TotalUsers"];
+            ViewData["TotalPosts"] = totals["TotalPosts"];
+            ViewData["TotalComments"] = totals["TotalComments"];
+            ViewData["TotalLikes"] = totals["TotalLikes"];
 
             return View();
         }

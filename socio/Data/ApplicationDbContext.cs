@@ -13,5 +13,7 @@ namespace SocioApp.Data
         {}
          public DbSet<Post> Posts { get; set; } = null!; 
          public DbSet<Comment> Comments { get; set; } = null!;
+        public DbSet<PostReaction> PostReactions { get; set; } = null!;
+
     }
 }

@@ -1,0 +1,92 @@
+@model List<SocioApp.Models.ProfileViewModel>
+@section Styles {
+    <style>
+        .users-container-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+
+        .users-container {
+            max-width: 600px;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            padding: 12px 15px;
+            transition: background-color 0.2s ease;
+            flex-wrap: nowrap;
+        }
+
+        .user-card:hover {
+            background-color: #f8f8f8;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-info img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ccc;
+        }
+
+        .user-info .text h4, .user-info .text p {
+            margin: 0;
+        }
+
+        .user-info a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        @@media (max-width: 768px) {
+            .users-container {
+                max-width: 90%;
+            }
+            .user-card {
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+        }
+    </style>
+}
+
+@if (!Model.Any())
+{
+    <p style="text-align:center;">No users found.</p>
+}
+else
+{
+    @foreach (var user in Model)
+    {
+        <div class="user-card">
+            <div class="user-info">
+                <img src="@Url.Content(!string.IsNullOrWhiteSpace(user.ProfileImage) ? user.ProfileImage : "/images/defaultprofile.png")" 
+                     alt="@user.Username" />
+                <a asp-controller="Profile" asp-action="ViewProfile" asp-route-id="@user.Id">
+                    <div class="text">
+                        <h4>@user.Username</h4>
+                        <p>@user.PostsCount posts</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    }
+}

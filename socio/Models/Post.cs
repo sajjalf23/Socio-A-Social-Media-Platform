@@ -33,5 +33,7 @@ namespace SocioApp.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
+
+         public virtual ICollection<PostReaction> Reactions { get; set; } = new List<PostReaction>();
     }
 }
