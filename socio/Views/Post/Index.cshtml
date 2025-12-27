@@ -354,11 +354,9 @@
                 success: function (res) {
                     if (res.success) {
                         var c = res?.comment;
-
                         var username = c?.commentUserName || "Unknown";
                         var content = c.content || "";
- 
-                        var $div = $('<div>').addClass('comment').attr('data-commentid', c.CommentId);
+                        var $div = $('<div>').addClass('comment').attr('data-commentid', c.commentId);
 
                         var $commentText = $('<div>').addClass('comment-text')
                             .append('<a href="/Profile/ViewProfile/' + c.UserId + '"><strong>' + escapeHtml(username) + '</strong></a>')
@@ -366,9 +364,7 @@
 
                         $div.append($commentText);
 
-                        if (c.UserId === "@currentuserid") {
-                            $div.append('<button class="delete-comment-btn">Delete</button>');
-                        }
+                        $div.append('<button class="delete-comment-btn">Delete</button>');
 
                         $commentsSection.append($div);
                         $input.val('');
@@ -392,7 +388,6 @@
         $commentsSection.on('click', '.delete-comment-btn', function () {
             var $commentDiv = $(this).closest('.comment');
             var commentId = $commentDiv.data('commentid');
-
             $.ajax({
                 url: '/Post/DeleteComment',
                 type: 'POST',

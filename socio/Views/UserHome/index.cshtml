@@ -144,9 +144,9 @@
         var post = posts[i];
         @* <div class="post" data-postid="@post.PostId"> *@
         <div class="post" data-postid="@post.PostId" data-ownerid="@post.postownerid"
-        onclick="window.location.href='@Url.Action("Index", "Post", new { id = post.PostId })'" 
         >
-            <div class="post-header">
+            <div class="post-header" 
+            onclick="window.location.href='@Url.Action("ViewProfile", "Profile", new { id = post.postownerid })'">
                 <img src="@Url.Content(post.ProfileImage)" alt="Profile" />
                 <div>
                     <p class="username mb-0">@post.Username <span class="time">• @post.TimeAgo</span></p>
@@ -154,6 +154,7 @@
             </div>
 
             <img src="@Url.Content(post.PostImage)" alt="Post Image" class="post-image"
+            onclick="window.location.href='@Url.Action("Index", "Post", new { id = post.PostId })'"
             />
 
             <div class="post-actions">

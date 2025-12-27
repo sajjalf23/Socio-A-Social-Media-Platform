@@ -64,7 +64,7 @@ namespace SocioApp.Controllers
             }
 
             ViewData["SearchQuery"] = query;
-
+ 
             return View(users);
         }
 

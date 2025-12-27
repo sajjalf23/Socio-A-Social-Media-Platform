@@ -1,13 +1,8 @@
+@model IEnumerable<SocioApp.Models.Comment>
+
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "User Comments";
-
-    var comments = new List<dynamic> {
-        new { Id = 1, Username = "john_doe", ProfileImage = "~/images/profile.png", CommentText = "Nice post!", PostId = 101, PostTitle = "Sunday Vibes" },
-        new { Id = 2, Username = "john_doe", ProfileImage = "~/images/profile.png", CommentText = "Awesome picture!", PostId = 102, PostTitle = "Travel Diaries" },
-        new { Id = 3, Username = "john_doe", ProfileImage = "~/images/profile.png", CommentText = "Loved this!", PostId = 103, PostTitle = "Foodie Heaven" },
-        new { Id = 4, Username = "john_doe", ProfileImage = "~/images/profile.png", CommentText = "Very informative!", PostId = 104, PostTitle = "Tech Updates" }
-    };
 }
 
 @section Styles {
@@ -24,8 +19,7 @@
         .comments-container-wrapper {
             display: flex;
             justify-content: center;
-            margin-top: 30px;
-            margin-bottom: 30px;
+            margin: 30px 0;
         }
 
         .comments-container {
@@ -49,6 +43,11 @@
             flex-wrap: nowrap;
         }
 
+        .comment-card.hidden-comment {
+            opacity: 0.7;
+            background-color: #fff0f0;
+        }
+
         .comment-card:hover {
             background-color: #f8f8f8;
         }
@@ -70,6 +69,7 @@
         .comment-info .text {
             display: flex;
             flex-direction: column;
+            cursor: pointer;
         }
 
         .comment-info h4 {
@@ -90,11 +90,6 @@
             flex-shrink: 0;
         }
 
-        .comment-actions a,
-        .comment-actions form {
-            display: inline-block;
-        }
-
         .comment-actions button {
             padding: 5px 10px;
             font-size: 13px;
@@ -102,15 +97,7 @@
             border-radius: 4px;
             cursor: pointer;
             transition: 0.2s;
-        }
-
-        .btn-view {
-            background-color: black;
-            color: white;
-        }
-
-        .btn-delete {
-            background-color: #c82333;
+            background-color: #c82333; /* Red for Hide/Unhide */
             color: white;
         }
 
@@ -135,28 +122,79 @@
 
 <div class="comments-container-wrapper">
     <div class="comments-container">
-        @foreach (var comment in comments)
+        @Html.AntiForgeryToken()
+
+        @if (!Model.Any())
         {
-            <div class="comment-card">
-                <div class="comment-info">
-                    <img src="@Url.Content(comment.ProfileImage)" alt="@comment.Username" />
-                    <div class="text">
-                        <h4>@comment.Username</h4>
-                        <p>@comment.CommentText</p>
-                        <p style="font-size:13px; color:#888;">On post: 
-                            <a href="@Url.Action("Post", "AdminHome", new { id = comment.PostId })">
-                                @comment.PostTitle
-                            </a>
-                        </p>
+            <p style="text-align:center;">No comments found.</p>
+        }
+        else
+        {
+            foreach (var comment in Model)
+            {
+                <div class="comment-card @(comment.IsHidden ? "hidden-comment" : "")">
+                    <div class="comment-info"
+                        onclick="window.location.href='@Url.Action("ViewProfile", "Profile", new { id = comment.UserId })'">
+                        <img src="/images/defaultprofile.png" alt="User" />
+                        <div class="text">
+                            <h4>@comment.CommentUserName</h4>
+                            <p>@comment.Content</p>
+                            <p style="font-size:13px; ">
+                                On post:
+                                <a asp-controller="Post" asp-action="Index" asp-route-id="@comment.PostId">
+                                    View Post
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="comment-actions">
+                        <button type="button"
+                                class="btn-hide-toggle"
+                                data-comment-id="@comment.CommentId"
+                                data-url="@Url.Action("HideUnhideComment", "AdminHome")"
+                                data-is-hidden="@comment.IsHidden">
+                            @(comment.IsHidden ? "Unhide Comment" : "Hide Comment")
+                        </button>
                     </div>
                 </div>
-                <div class="comment-actions">
-                    <form method="post" asp-action="DeleteComment" asp-controller="AdminHome">
-                        <input type="hidden" name="id" value="@comment.Id" />
-                        <button type="submit" class="btn-delete">Delete Comment</button>
-                    </form>
-                </div>
-            </div>
+            }
         }
     </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+<script>
+    $(document).on("click", ".btn-hide-toggle", function() {
+        const button = $(this);
+        const commentId = button.data("comment-id");
+        const url = button.data("url");
+        let isHidden = button.data("is-hidden") === true;
+        const token = $('input[name="__RequestVerificationToken"]').val();
+
+        button.prop("disabled", true);
+
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: { id: commentId, __RequestVerificationToken: token },
+            success: function(res) {
+                if (res.success) {
+                    isHidden = !isHidden;
+                    button.text(isHidden ? "Unhide Comment" : "Hide Comment");
+                    button.data("is-hidden", isHidden);
+                    button.closest(".comment-card").toggleClass("hidden-comment", isHidden);
+                } else {
+                    alert(res.message || "Error toggling comment");
+                }
+            },
+            error: function() {
+                alert("AJAX error occurred.");
+            },
+            complete: function() {
+                button.prop("disabled", false);
+            }
+        });
+    });
+</script>

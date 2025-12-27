@@ -198,40 +198,6 @@ namespace SocioApp.Services
                 throw;
             }
         }
-
-        // public async Task<bool> DeletePostAsync(int postId, string userId)
-        // {
-        //     try
-        //     {
-        //         using var connection = GetConnection();
-        //         var post = await connection.QuerySingleOrDefaultAsync<Post>(
-        //             "SELECT PostId, UserId, MediaUrl FROM Posts WHERE PostId = @PostId AND UserId = @UserId",
-        //             new { PostId = postId, UserId = userId }
-        //         );
-
-        //         if (post == null) return false;
-
-        //         if (!string.IsNullOrEmpty(post.MediaUrl))
-        //         {
-        //             string publicId = GetCloudinaryPublicId(post.MediaUrl);
-        //             if (!string.IsNullOrEmpty(publicId))
-        //             {
-        //                 await _cloudinary.DestroyAsync(new DeletionParams(publicId));
-        //             }
-        //         }
-
-        //         var sql = "DELETE FROM Posts WHERE PostId = @PostId AND UserId = @UserId";
-        //         var rows = await connection.ExecuteAsync(sql, new { PostId = postId, UserId = userId });
-
-        //         return rows > 0;
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         _logger.LogError(ex, "Error deleting post {PostId} for user {UserId}", postId, userId);
-        //         throw;
-        //     }
-        // }
-
         public async Task<bool> DeletePostAsync(int postId, string userId)
         {
             using var connection = GetConnection();
@@ -319,34 +285,6 @@ namespace SocioApp.Services
             }
         }
 
-        // public async Task<IEnumerable<Post>> GetAllPostsAsync(bool includeHidden = false)
-        // {
-        //     try
-        //     {
-        //         // Use GetConnection() and explicitly open it
-        //         using var connection = GetConnection();
-        //         await connection.OpenAsync();
-
-        //         var sql = @"
-        //     SELECT PostId 
-        //     FROM Posts";
-
-        //         if (!includeHidden)
-        //             sql += " WHERE IsHidden = 0";
-
-        //         sql += " ORDER BY CreatedAt DESC";
-
-        //         // Query posts
-        //         var posts = await connection.QueryAsync<dynamic>(sql);
-        //         return posts;
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         _logger.LogError(ex, "Error fetching all posts (includeHidden={IncludeHidden})", includeHidden);
-        //         throw;
-        //     }
-        // }
-
         public async Task<IEnumerable<dynamic>> GetAllPostsAsync(bool includeHidden = false)
         {
             try
@@ -378,13 +316,11 @@ namespace SocioApp.Services
 
             try
             {
-                // Remove previous dislike if exists
                 var sqlRemoveDislike = @"
                 DELETE FROM PostReactions
                 WHERE PostId = @PostId AND UserId = @UserId AND Type = 'Dislike'";
                 await connection.ExecuteAsync(sqlRemoveDislike, new { PostId = postId, UserId = userId }, transaction);
 
-                // Check if user already liked
                 var sqlCheckLike = @"
                 SELECT COUNT(*) FROM PostReactions
                 WHERE PostId = @PostId AND UserId = @UserId AND Type = 'Like'";
@@ -435,13 +371,11 @@ namespace SocioApp.Services
 
             try
             {
-                // Remove previous like if exists
                 var sqlRemoveLike = @"
                 DELETE FROM PostReactions
                 WHERE PostId = @PostId AND UserId = @UserId AND Type = 'Like'";
                 await connection.ExecuteAsync(sqlRemoveLike, new { PostId = postId, UserId = userId }, transaction);
 
-                // Check if user already disliked
                 var sqlCheckDislike = @"
                 SELECT COUNT(*) FROM PostReactions
                 WHERE PostId = @PostId AND UserId = @UserId AND Type = 'Dislike'";
@@ -449,7 +383,6 @@ namespace SocioApp.Services
 
                 if (alreadyDisliked > 0)
                 {
-                    // Remove dislike (toggle)
                     var sqlRemoveDislike = @"
                     DELETE FROM PostReactions
                     WHERE PostId = @PostId AND UserId = @UserId AND Type = 'Dislike'";
@@ -457,14 +390,12 @@ namespace SocioApp.Services
                 }
                 else
                 {
-                    // Add dislike
                     var sqlAddDislike = @"
                     INSERT INTO PostReactions (PostId, UserId, Type)
                     VALUES (@PostId, @UserId, 'Dislike')";
                     await connection.ExecuteAsync(sqlAddDislike, new { PostId = postId, UserId = userId }, transaction);
                 }
 
-                // Update counts in Posts table
                 var sqlUpdateCounts = @"
                 UPDATE Posts
                 SET LikesCount = (SELECT COUNT(*) FROM PostReactions WHERE PostId = @PostId AND Type = 'Like'),
@@ -497,7 +428,7 @@ namespace SocioApp.Services
                 WHERE PostId = @PostId AND UserId = @UserId";
 
                 var reaction = await connection.QuerySingleOrDefaultAsync<string>(sql, new { PostId = postId, UserId = userId });
-                return reaction; // "Like", "Dislike", or null
+                return reaction; 
             }
             catch (Exception ex)
             {

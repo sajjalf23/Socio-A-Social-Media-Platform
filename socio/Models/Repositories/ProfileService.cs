@@ -358,7 +358,7 @@ ORDER BY CreatedAt DESC";
             SELECT Id, UserName AS Username, Bio, ProfilePicture AS ProfileImage, Email, IsBanned,
                    (SELECT COUNT(*) FROM Posts WHERE UserId = u.Id) AS PostsCount
             FROM AspNetUsers u
-              AND LOWER(UserName) LIKE LOWER(@SearchTerm)
+            WHERE LOWER(UserName) LIKE LOWER(@SearchTerm)
             ORDER BY UserName ASC";
 
                 var users = await connection.QueryAsync<ProfileViewModel>(
@@ -369,30 +369,6 @@ ORDER BY CreatedAt DESC";
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error searching users with term {SearchTerm}", searchTerm);
-                throw;
-            }
-        }
-
-        public async Task<IEnumerable<ProfileViewModel>> SearchUsersForAdminAsync(string searchTerm)
-        {
-            try
-            {
-                using var connection = GetConnection();
-                var sql = @"
-                    SELECT Id, UserName AS Username, Bio, ProfilePicture AS ProfileImage, Email, IsBanned,
-                           (SELECT COUNT(*) FROM Posts WHERE UserId = u.Id) AS PostsCount
-                    FROM AspNetUsers u
-                    WHERE UserName LIKE @SearchTerm
-                    ORDER BY UserName ASC";
-
-                var users = await connection.QueryAsync<ProfileViewModel>(
-                    sql, new { SearchTerm = $"%{searchTerm}%" });
-
-                return users;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error searching users (admin) with term {SearchTerm}", searchTerm);
                 throw;
             }
         }

@@ -14,10 +14,13 @@ namespace socio.Controllers
 
         private readonly IAdminService _adminService;
         private readonly IProfileService _profileService;
-        public AdminHomeController(IAdminService adminService, IProfileService profileService)
+
+        private readonly ICommentService _commentService;
+        public AdminHomeController(IAdminService adminService, IProfileService profileService, ICommentService c)
         {
             _adminService = adminService;
             _profileService = profileService;
+            _commentService = c;
         }
 
         public async Task<IActionResult> Index()
@@ -65,144 +68,140 @@ namespace socio.Controllers
 
 
 
-        [HttpGet]
-        public IActionResult Post(int id = 1)
-        {
-            var post = new
-            {
-                Id = id,
-                Username = "john_doe",
-                ProfileImage = "~/images/profile.png",
-                PostImage = "~/images/feedimg2.png",
-                TimeAgo = "2 days ago",
-                Likes = 125,
-                Content = "Sunday vibes  Coffee, music, and a lazy afternoon.",
-                Comments = new List<dynamic> {
-                    new { Username="amy_21", Text="Love this! " },
-                    new { Username="mike_dev", Text="Perfect chill day setup!" },
-                    new { Username="alex", Text="Great photo " },
-                    new { Username="sarah", Text="I need this kind of Sunday!" }
-                }
-            };
+        // [HttpGet]
+        // public IActionResult Post(int id = 1)
+        // {
+        //     var post = new
+        //     {
+        //         Id = id,
+        //         Username = "john_doe",
+        //         ProfileImage = "~/images/profile.png",
+        //         PostImage = "~/images/feedimg2.png",
+        //         TimeAgo = "2 days ago",
+        //         Likes = 125,
+        //         Content = "Sunday vibes  Coffee, music, and a lazy afternoon.",
+        //         Comments = new List<dynamic> {
+        //             new { Username="amy_21", Text="Love this! " },
+        //             new { Username="mike_dev", Text="Perfect chill day setup!" },
+        //             new { Username="alex", Text="Great photo " },
+        //             new { Username="sarah", Text="I need this kind of Sunday!" }
+        //         }
+        //     };
 
-            ViewData["Post"] = post!;
-            return View();
+        //     ViewData["Post"] = post!;
+        //     return View();
+        // }
+
+        // [HttpGet]
+        // public IActionResult Profile()
+        // {
+        //     var profile = new
+        //     {
+        //         Username = "john_doe",
+        //         Bio = "Professional procrastinator. Do not disturb.\nPowered by caffeine and bad decisions ☕️\nI put the 'Pro' in 'Procrastinate.'",
+        //         PostsCount = 8,
+        //         ProfileImage = "~/images/profile.png",
+        //         Posts = new List<string>
+        //         {
+        //             "~/images/feedimg.png",
+        //             "~/images/feedimg2.png",
+        //             "~/images/profile.png",
+        //             "~/images/feedimg2.png",
+        //             "~/images/feedimg.png",
+        //             "~/images/feedimg2.png",
+        //             "~/images/feedimg.png",
+        //             "~/images/profile.png"
+        //         }
+        //     };
+
+        //     ViewData["Profile"] = profile;
+        //     return View();
+        // }
+
+
+        [HttpGet("AdminHome/Comments/{userId}")]
+        public async Task<IActionResult> Comments(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                return BadRequest("UserId is required");
+
+            var comments = await _commentService.GetCommentsByUserAsync(userId);
+            return View(comments);
         }
 
-        [HttpGet]
-        public IActionResult Profile()
-        {
-            var profile = new
-            {
-                Username = "john_doe",
-                Bio = "Professional procrastinator. Do not disturb.\nPowered by caffeine and bad decisions ☕️\nI put the 'Pro' in 'Procrastinate.'",
-                PostsCount = 8,
-                ProfileImage = "~/images/profile.png",
-                Posts = new List<string>
-                {
-                    "~/images/feedimg.png",
-                    "~/images/feedimg2.png",
-                    "~/images/profile.png",
-                    "~/images/feedimg2.png",
-                    "~/images/feedimg.png",
-                    "~/images/feedimg2.png",
-                    "~/images/feedimg.png",
-                    "~/images/profile.png"
-                }
-            };
-
-            ViewData["Profile"] = profile;
-            return View();
-        }
-
-        [HttpGet]
-        public IActionResult Comments(string username)
-        {
-            var comments = new List<dynamic>
-    {
-        new { Id = 1, PostId = 101, PostTitle = "Sunday Vibes", Text = "Love this! ", TimeAgo = "2 days ago" },
-        new { Id = 2, PostId = 102, PostTitle = "Morning Run", Text = "Great job!", TimeAgo = "5 days ago" },
-        new { Id = 3, PostId = 103, PostTitle = "Coffee Time", Text = "Yummy!", TimeAgo = "1 week ago" }
-    };
-
-            ViewData["UserComments"] = comments;
-            return View();
-        }
 
         [HttpPost]
-        public IActionResult DeleteComment(int id)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> HideUnhideComment(int id)
         {
-            return RedirectToAction("AllUsers");
+            bool success = await _commentService.ToggleHideCommentAsync(id);
+
+            if (!success)
+                return Json(new { success = false, message = "Failed to toggle comment visibility." });
+
+            return Json(new { success = true });
         }
 
-        [HttpPost]
-        public IActionResult DeletePost(int id)
-        {
-            return RedirectToAction("AllUsers");
-        }
+
+        // [HttpPost]
+        // [ValidateAntiForgeryToken]
+        // public JsonResult BanUnbanPost(int id)
+        // {
+        //     var post = _context.Posts.Find(id);
+        //     if (post == null) return Json(new { success = false, message = "Post not found" });
+
+        //     post.IsBanned = !post.IsBanned;
+        //     _context.SaveChanges();
+
+        //     return Json(new { success = true });
+        // }
 
         [HttpPost]
         public async Task<IActionResult> BanUnbanUser(string id)
         {
             Console.WriteLine($"BanUnbanUser called with ID: {id}");
-            if(User.HasClaim("CanBanUser","true")){
-            if (string.IsNullOrWhiteSpace(id))
+            if (User.HasClaim("CanBanUser", "true"))
             {
-                Console.WriteLine("Invalid user ID received.");
-                return Json(new { success = false, message = "Invalid user ID." });
-            }
+                if (string.IsNullOrWhiteSpace(id))
+                {
+                    Console.WriteLine("Invalid user ID received.");
+                    return Json(new { success = false, message = "Invalid user ID." });
+                }
 
-            try
-            {
-                var isBanned = await _profileService.ToggleBanAsync(id);
-                Console.WriteLine($"User {id} new banned status: {isBanned}");
-                return Json(new { success = true, isBanned, message = "User status updated." });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error toggling ban for user {id}: {ex}");
-                return Json(new { success = false, message = ex.Message });
-            }
+                try
+                {
+                    var isBanned = await _profileService.ToggleBanAsync(id);
+                    Console.WriteLine($"User {id} new banned status: {isBanned}");
+                    return Json(new { success = true, isBanned, message = "User status updated." });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error toggling ban for user {id}: {ex}");
+                    return Json(new { success = false, message = ex.Message });
+                }
             }
             return BadRequest("admin only can do this");
         }
 
 
 
-
-        private static List<dynamic> Users = new List<dynamic> {
-            new { Id = 1, Username = "john_doe", ProfileImage = "~/images/profile.png", PostCount = 12 },
-            new { Id = 2, Username = "sara_khan", ProfileImage = "~/images/profile.png", PostCount = 8 },
-            new { Id = 3, Username = "ali_ahmed", ProfileImage = "~/images/profile.png", PostCount = 5 },
-            new { Id = 4, Username = "mina_yusuf", ProfileImage = "~/images/profile.png", PostCount = 7 },
-            new { Id = 5, Username = "khalid_ali", ProfileImage = "~/images/profile.png", PostCount = 9 },
-            new { Id = 6, Username = "nina_ahmad", ProfileImage = "~/images/profile.png", PostCount = 6 }
-        };
-
         [HttpGet]
-        public IActionResult Search()
+        public async Task<IActionResult> Search(string query)
         {
-            ViewData["Users"] = Users;
-            return View();
-        }
+            List<ProfileViewModel> users;
 
-        [HttpGet]
-        public IActionResult SearchResults(string query)
-        {
             if (string.IsNullOrWhiteSpace(query))
             {
-                ViewData["Users"] = Users;
+                users = new List<ProfileViewModel>();
             }
             else
             {
-                var filteredUsers = Users
-                    .Where(u => u.Username.ToLower().Contains(query.ToLower()))
-                    .ToList();
-                ViewData["Users"] = filteredUsers;
+                users = (await _profileService.SearchUsersAsync(query)).ToList();
             }
 
             ViewData["SearchQuery"] = query;
-            return View("Search");
+
+            return View(users);
         }
 
     }

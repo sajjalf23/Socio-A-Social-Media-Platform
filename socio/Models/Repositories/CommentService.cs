@@ -66,16 +66,23 @@ public class CommentService : ICommentService
         try
         {
             using var connection = GetConnection();
-            var sql = @"
-                SELECT c.CommentId, c.PostId, c.UserId, c.Content, c.IsHidden, c.CreatedAt, c.UpdatedAt,
-                       u.UserName AS CommentUserName
-                FROM Comments c
-                INNER JOIN AspNetUsers u ON c.UserId = u.Id
-                WHERE c.UserId = @UserId
-                ORDER BY c.CreatedAt DESC";
 
-            var comments = await connection.QueryAsync<Comment>(sql, new { UserId = userId });
-            return comments;
+            var sql = @"
+            SELECT 
+                c.CommentId,
+                c.PostId,
+                c.UserId,
+                c.Content,
+                c.IsHidden,
+                c.CreatedAt,
+                c.UpdatedAt,
+                u.UserName AS CommentUserName
+            FROM Comments c
+            INNER JOIN AspNetUsers u ON c.UserId = u.Id
+            WHERE c.UserId = @UserId
+            ORDER BY c.CreatedAt DESC";
+
+            return await connection.QueryAsync<Comment>(sql, new { UserId = userId });
         }
         catch (Exception ex)
         {

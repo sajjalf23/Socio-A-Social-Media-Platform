@@ -38,8 +38,6 @@ namespace SocioApp.Services
         {
             var result = new List<int>();
             var today = DateTime.UtcNow.Date;
-            
-            // Get all user creation dates
             var userDates = await _db.Users
                 .Select(u => EF.Property<DateTime>(u, "CreatedAt").Date)
                 .Where(date => date >= today.AddDays(-6))
