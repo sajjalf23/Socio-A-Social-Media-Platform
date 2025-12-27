@@ -33,23 +33,6 @@ namespace SocioApp.Services
             return new SqlConnection(connectionString);
         }
 
-        // private SqlConnection GetConnection()
-        // {
-        //     var connection = (SqlConnection)_context.Database.GetDbConnection();
-        //     if (connection.State != System.Data.ConnectionState.Open)
-        //         connection.Open();
-        //     return connection;
-        // }
-
-        // private SqlConnection GetConnection()
-        // {
-        //     var connectionString = _configuration.GetConnectionString("DefaultConnection");
-        //     if (string.IsNullOrWhiteSpace(connectionString))
-        //         throw new InvalidOperationException("Database connection string is not configured.");
-
-        //     return new SqlConnection(connectionString);
-        // }
-
         private async Task<string?> UploadProfileImageAsync(IFormFile? imageFile)
         {
             try
@@ -93,7 +76,7 @@ SELECT
     [Id], [Name] AS Username, [Bio], [ProfilePicture] AS ProfileImage, [Email], [IsBanned],
     (SELECT COUNT(*) FROM Posts WHERE UserId = u.[Id]) AS PostsCount
 FROM [AspNetUsers] u
-WHERE [Id] = @UserId AND [IsBanned] = 0";
+WHERE [Id] = @UserId ";
 
                 var profile = await connection.QuerySingleOrDefaultAsync<ProfileViewModel>(
                     sql,
@@ -195,7 +178,7 @@ ORDER BY CreatedAt DESC";
                          SELECT [Id], [Name] AS Username, [Bio], [ProfilePicture] AS ProfileImage, [Email], [IsBanned],
                           (SELECT COUNT(*) FROM Posts WHERE UserId = u.[Id]) AS PostsCount
                          FROM [AspNetUsers] u
-                      WHERE [Id] = @UserId AND [IsBanned] = 0";
+                      WHERE [Id] = @UserId ";
 
                 var profile = await connection.QuerySingleOrDefaultAsync<ProfileViewModel>(
                     sql,
@@ -294,23 +277,33 @@ ORDER BY CreatedAt DESC";
 
         public async Task<bool> ToggleBanAsync(string userId)
         {
+            Console.WriteLine($"ToggleBanAsync called for userId: {userId}");
+
             try
             {
                 using var connection = GetConnection();
+
                 var current = await connection.QuerySingleOrDefaultAsync<bool?>(
                     "SELECT IsBanned FROM AspNetUsers WHERE Id = @UserId",
                     new { UserId = userId }
                 );
 
-                if (current == null) return false;
+                Console.WriteLine($"Current banned status: {current}");
+
+                if (current == null)
+                {
+                    Console.WriteLine($"No user found with ID: {userId}");
+                    throw new InvalidOperationException("User not found.");
+                }
 
                 bool newValue = !current.Value;
+                Console.WriteLine($"Toggling banned status to: {newValue}");
 
                 var sql = @"
-                    UPDATE AspNetUsers
-                    SET IsBanned = @NewValue,
-                        UpdatedAt = @UpdatedAt
-                    WHERE Id = @UserId";
+            UPDATE AspNetUsers
+            SET IsBanned = @NewValue,
+                UpdatedAt = @UpdatedAt
+            WHERE Id = @UserId";
 
                 var rows = await connection.ExecuteAsync(sql, new
                 {
@@ -319,14 +312,20 @@ ORDER BY CreatedAt DESC";
                     UpdatedAt = DateTime.UtcNow
                 });
 
-                return rows > 0;
+                Console.WriteLine($"Rows affected: {rows}");
+
+                if (rows == 0)
+                    throw new Exception("No rows updated. Ban toggle failed.");
+
+                return newValue;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error toggling ban for user {UserId}", userId);
+                Console.WriteLine($"Exception in ToggleBanAsync for {userId}: {ex}");
                 throw;
             }
         }
+
 
         public async Task<IEnumerable<ProfileViewModel>> GetAllUsersAsync()
         {
@@ -337,7 +336,6 @@ ORDER BY CreatedAt DESC";
                     SELECT Id, UserName AS Username, Bio, ProfilePicture AS ProfileImage, Email, IsBanned,
                            (SELECT COUNT(*) FROM Posts WHERE UserId = u.Id) AS PostsCount
                     FROM AspNetUsers u
-                    WHERE IsBanned = 0
                     ORDER BY CreatedAt DESC";
 
                 var users = await connection.QueryAsync<ProfileViewModel>(sql);
@@ -350,31 +348,30 @@ ORDER BY CreatedAt DESC";
             }
         }
 
-       public async Task<IEnumerable<ProfileViewModel>> SearchUsersAsync(string searchTerm)
-{
-    try
-    {
-        using var connection = GetConnection();
+        public async Task<IEnumerable<ProfileViewModel>> SearchUsersAsync(string searchTerm)
+        {
+            try
+            {
+                using var connection = GetConnection();
 
-        var sql = @"
+                var sql = @"
             SELECT Id, UserName AS Username, Bio, ProfilePicture AS ProfileImage, Email, IsBanned,
                    (SELECT COUNT(*) FROM Posts WHERE UserId = u.Id) AS PostsCount
             FROM AspNetUsers u
-            WHERE IsBanned = 0 
               AND LOWER(UserName) LIKE LOWER(@SearchTerm)
             ORDER BY UserName ASC";
 
-        var users = await connection.QueryAsync<ProfileViewModel>(
-            sql, new { SearchTerm = $"%{searchTerm}%" });
+                var users = await connection.QueryAsync<ProfileViewModel>(
+                    sql, new { SearchTerm = $"%{searchTerm}%" });
 
-        return users;
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Error searching users with term {SearchTerm}", searchTerm);
-        throw;
-    }
-}
+                return users;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error searching users with term {SearchTerm}", searchTerm);
+                throw;
+            }
+        }
 
         public async Task<IEnumerable<ProfileViewModel>> SearchUsersForAdminAsync(string searchTerm)
         {
@@ -399,5 +396,27 @@ ORDER BY CreatedAt DESC";
                 throw;
             }
         }
+
+        public async Task<IEnumerable<ProfileViewModel>> GetAllUserforadmin()
+        {
+            try
+            {
+                using var connection = GetConnection();
+                var sql = @"
+                    SELECT Id, Name AS Username, Bio, ProfilePicture AS ProfileImage, Email, IsBanned,
+                           (SELECT COUNT(*) FROM Posts WHERE UserId = u.Id) AS PostsCount
+                    FROM AspNetUsers u
+                    ORDER BY CreatedAt DESC";
+
+                var users = await connection.QueryAsync<ProfileViewModel>(sql);
+                return users;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching all active users.");
+                throw;
+            }
+        }
+
     }
 }

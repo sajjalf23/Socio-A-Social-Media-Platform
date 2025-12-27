@@ -14,6 +14,8 @@ namespace SocioApp.Services
 
         Task<IEnumerable<ProfileViewModel>> SearchUsersAsync(string searchTerm);
         public Task<ProfileViewModel?> GetProfilebyidAsync(string b);
+
+        Task<IEnumerable<ProfileViewModel>> GetAllUserforadmin();
         public Task<bool> UpdateProfileAsync(string userId, string username, string name, string bio, IFormFile? profileImageFile, string preprofileimg);
     }
 }

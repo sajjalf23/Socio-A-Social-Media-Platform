@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("socio")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+452994840a04e9426a7b8c9c2d241178fae35339")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+491396f5cff9a88b9928a3ac2ed83de34719080d")]
 [assembly: System.Reflection.AssemblyProductAttribute("socio")]
 [assembly: System.Reflection.AssemblyTitleAttribute("socio")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

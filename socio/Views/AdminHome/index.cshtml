@@ -101,39 +101,28 @@
 <div class="container my-3">
     <div class="row g-3">
 
-        <div class="col-6 col-md-3">
-            <div class="widget-card">
-                <h4>Total Users</h4>
-                <h2>@totalUsers</h2>
-                <div>@Html.Raw(usersChange)</div>
-            </div>
-        </div>
-
-        <div class="col-6 col-md-3">
-            <div class="widget-card">
-                <h4>Total Posts</h4>
-                <h2>@totalPosts</h2>
-                <div>@Html.Raw(postsChange)</div>
-            </div>
-        </div>
-
-        <div class="col-6 col-md-3">
-            <div class="widget-card">
-                <h4>Total Comments</h4>
-                <h2>@totalComments</h2>
-                <div>@Html.Raw(commentsChange)</div>
-            </div>
-        </div>
-
-        <div class="col-6 col-md-3">
-            <div class="widget-card">
-                <h4>Total Likes</h4>
-                <h2>@totalLikes</h2>
-                <div>@Html.Raw(likesChange)</div>
-            </div>
-        </div>
-
+    <div class="col-6 col-md-3">
+        @await Component.InvokeAsync("StatWidget",
+            new { title = "Total Users", total = totalUsers, changeHtml = usersChange })
     </div>
+
+    <div class="col-6 col-md-3">
+        @await Component.InvokeAsync("StatWidget",
+            new { title = "Total Posts", total = totalPosts, changeHtml = postsChange })
+    </div>
+
+    <div class="col-6 col-md-3">
+        @await Component.InvokeAsync("StatWidget",
+            new { title = "Total Comments", total = totalComments, changeHtml = commentsChange })
+    </div>
+
+    <div class="col-6 col-md-3">
+        @await Component.InvokeAsync("StatWidget",
+            new { title = "Total Likes", total = totalLikes, changeHtml = likesChange })
+    </div>
+
+</div>
+
 </div>
 
 <div class="container mt-4">

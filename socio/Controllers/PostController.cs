@@ -15,7 +15,7 @@ using SocioApp.Hubs;
 
 namespace SocioApp.Controllers
 {
-    [Authorize]
+    [Authorize (policy:"UserPages")]
     public class PostController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -224,7 +224,7 @@ namespace SocioApp.Controllers
                     {
                         comment.CommentId,
                         comment.UserId,
-                        CommentUserName = user.UserName, // This is important
+                        CommentUserName = user.UserName, 
                         comment.Content,
                         CreatedAt = comment.CreatedAt.ToString("g")
                     }

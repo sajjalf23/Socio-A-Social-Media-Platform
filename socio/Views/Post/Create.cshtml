@@ -101,16 +101,13 @@
 
         <form asp-action="Create" asp-controller="Post" method="post" enctype="multipart/form-data">
 
-            <!-- Clickable upload box -->
             <div class="upload-area" id="uploadArea">
                 <i class="bi bi-image"></i>
                 <p>Click to upload image</p>
             </div>
 
-            <!-- Hidden file input (must NOT be inside upload-area) -->
             <input type="file" accept="image/*" id="imageInput" name="imagefile" style="display:none;" />
 
-            <!-- Preview -->
             <img id="previewImage" class="preview-image" alt="Preview" />
 
             <textarea name="caption" placeholder="Write a caption..." id="captionInput"></textarea>

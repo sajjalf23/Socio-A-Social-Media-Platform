@@ -157,7 +157,6 @@
 
     .comments {
         max-height: 300px;
-        /* Increased height */
         overflow-y: auto;
         margin-top: 10px;
     }
@@ -165,20 +164,17 @@
     .comment {
         display: flex;
         justify-content: space-between;
-        /* Username + comment on left, delete button right */
         align-items: center;
         font-size: 14px;
         padding: 6px 10px;
         margin-bottom: 6px;
         border-radius: 5px;
-        @* background-color: #f9f9f9; *@
     }
 
     .comment-text {
         display: flex;
         align-items: center;
         gap: 5px;
-        /* space between username and comment */
         flex: 1;
     }
 
@@ -216,25 +212,21 @@
 
 
 <div class="post-container">
-    <!-- Post Image -->
     <div class="post-image">
         <img src="@(postimage)" alt="Post Image" />
     </div>
 
     <div class="post-details">
-        <!-- Post Header -->
         <div class="post-header">
             <img src="@(postuserimg)" alt="Profile Image" />
             <div>
-                <div class="post-username">@postUser</div>
+                <div class="post-username" onclick="window.location.href='@Url.Action("ViewProfile", "Profile", new { id = postuserid })'" >@postUser</div>
                 <div class="time-ago">@postupdateat.ToString("g")</div>
             </div>
         </div>
 
-        <!-- Post Caption -->
         <div class="post-caption"><strong>@postUser</strong> @postcontent</div>
 
-        <!-- Post Actions -->
         <div class="post-actions">
             <i class="bi bi-heart" id="likeBtn" title="Like"></i>
             <i class="bi bi-hand-thumbs-down" id="dislikeBtn" title="Dislike"></i>
@@ -263,7 +255,6 @@
         </div>
 
 
-        <!-- Add Comment -->
         <div class="add-comment">
             <input type="text" id="commentInput" placeholder="Add a comment..." />
             <button id="postBtn">Post</button>
@@ -299,14 +290,12 @@
         var liked = false;
         var disliked = false;
 
-        // Escape HTML to prevent XSS
         function escapeHtml(unsafe) {
             return unsafe.replace(/[&<>"'/]/g, function (m) {
                 return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;", "/": "&#x2F;" }[m];
             });
         }
 
-        // Update like/dislike UI
         function updateReactionUI(res) {
             $likesCountEl.text(res.likes + ' likes');
             $likeBtn.toggleClass('bi-heart-fill', res.liked)
@@ -319,10 +308,8 @@
             disliked = res.disliked;
         }
 
-        // CSRF token
         var token = $('input[name="__RequestVerificationToken"]').val();
 
-        // Like button click
         $likeBtn.click(function () {
             $.ajax({
                 url: '/Post/Like',
@@ -337,7 +324,6 @@
             });
         });
 
-        // Dislike button click
         $dislikeBtn.click(function () {
             $.ajax({
                 url: '/Post/DisLike',
@@ -352,7 +338,6 @@
             });
         });
 
-        // Load initial reaction state
         $.get('/Post/GetUserReaction', { postId: postid }, function (res) {
             if (res.success) updateReactionUI(res);
         });
@@ -373,7 +358,6 @@
                         var username = c?.commentUserName || "Unknown";
                         var content = c.content || "";
  
-                        // Create new comment div
                         var $div = $('<div>').addClass('comment').attr('data-commentid', c.CommentId);
 
                         var $commentText = $('<div>').addClass('comment-text')
@@ -382,7 +366,6 @@
 
                         $div.append($commentText);
 
-                        // Add delete button if current user is comment owner
                         if (c.UserId === "@currentuserid") {
                             $div.append('<button class="delete-comment-btn">Delete</button>');
                         }

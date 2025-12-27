@@ -77,7 +77,7 @@
         <h2>Edit Post</h2>
 
         <form asp-action="Edit" method="post" enctype="multipart/form-data">
-            <!-- Hidden postId -->
+          
             <input type="hidden" name="postId" value="@post.Id" />
 
             <div class="image-wrapper">
@@ -86,7 +86,6 @@
                     <i class="bi bi-camera"></i> Change Image
                 </button>
 
-                <!-- FIXED: name="imagefile" must match controller -->
                 <input type="file" id="imageInput" name="imagefile" accept="image/*" hidden>
             </div>
 

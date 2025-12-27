@@ -1,5 +1,20 @@
-﻿<!DOCTYPE html>
+﻿@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc;
+@using System.Text.Json.Serialization
+@using SocioApp.Models;
+@using Microsoft.AspNetCore.Authorization;
+@using SocioApp.Services;
+@using SocioApp.Data;
+@using Microsoft.AspNetCore.Identity;
+@inject UserManager<ApplicationUser> UserManager
+@{
+    var user = await UserManager.GetUserAsync(User);
+    var isAdmin = user != null && await UserManager.IsInRoleAsync(user, "Admin");
+}
+
+<!DOCTYPE html>
 <html lang="en">
+
 
 <head>
     <meta charset="utf-8" />
@@ -153,7 +168,7 @@
             max-width: 360px;
             animation: slideIn 0.3s ease;
             font-family: 'Segoe UI', system-ui, sans-serif;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
         }
 
         .toast-message span:first-child {
@@ -205,6 +220,7 @@
                 opacity: 0;
                 transform: translateX(100%);
             }
+
             100% {
                 opacity: 1;
                 transform: translateX(0);
@@ -220,6 +236,7 @@
                 opacity: 1;
                 transform: translateX(0);
             }
+
             100% {
                 opacity: 0;
                 transform: translateX(100%);
@@ -241,6 +258,12 @@
                 <a asp-controller="Post" asp-action="Create"><i class="bi bi-plus-circle"></i> Create</a>
                 <a asp-controller="Profile" asp-action="Index"><i class="bi bi-person-circle"></i> Profile</a>
                 <a asp-controller="Search" asp-action="Index"><i class="bi bi-search"></i> Search</a>
+                @if (isAdmin)
+                {
+                    <a asp-controller="AdminHome" asp-action="Index" title="Admin Dashboard">
+                        <i class="bi bi-speedometer2"></i> Admin
+                    </a>
+                }
             </div>
         </div>
 
@@ -279,13 +302,17 @@
         <a asp-controller="Post" asp-action="Create"><i class="bi bi-plus-circle"></i></a>
         <a asp-controller="Profile" asp-action="Index"><i class="bi bi-person-circle"></i></a>
         <a asp-controller="Search" asp-action="Index"><i class="bi bi-search"></i></a>
+        @if (isAdmin)
+        {
+            <a asp-controller="AdminHome" asp-action="Index" title="Admin Dashboard">
+                <i class="bi bi-speedometer2"></i>
+            </a>
+        }
     </div>
 
-    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- SignalR (CORRECT VERSION) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.0/signalr.min.js"></script>
 
     <script>
@@ -325,4 +352,5 @@
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+
 </html>

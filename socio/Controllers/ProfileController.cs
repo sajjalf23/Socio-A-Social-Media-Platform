@@ -7,7 +7,8 @@ using SocioApp.Models;
 
 namespace SocioApp.Controllers
 {
-    [Authorize]
+    [Authorize (policy:"UserPages")]
+
     [Route("Profile")]
     public class ProfileController : Controller
     {

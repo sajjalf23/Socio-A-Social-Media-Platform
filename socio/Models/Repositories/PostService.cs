@@ -52,7 +52,8 @@ namespace SocioApp.Services
                 using var connection = GetConnection();
 
                 const string sql = @"
-            SELECT PostId, UserId, Content, MediaUrl, IsHidden, LikesCount, DislikesCount, CreatedAt, UpdatedAt
+            SELECT PostId, UserId, Content, MediaUrl, IsHidden, LikesCount, 
+            DislikesCount, CreatedAt, UpdatedAt
             FROM Posts
             WHERE PostId = @PostId";
 

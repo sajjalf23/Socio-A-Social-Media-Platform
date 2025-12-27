@@ -143,7 +143,9 @@
     {
         var post = posts[i];
         @* <div class="post" data-postid="@post.PostId"> *@
-        <div class="post" data-postid="@post.PostId" data-ownerid="@post.postownerid">
+        <div class="post" data-postid="@post.PostId" data-ownerid="@post.postownerid"
+        onclick="window.location.href='@Url.Action("Index", "Post", new { id = post.PostId })'" 
+        >
             <div class="post-header">
                 <img src="@Url.Content(post.ProfileImage)" alt="Profile" />
                 <div>
@@ -151,7 +153,8 @@
                 </div>
             </div>
 
-            <img src="@Url.Content(post.PostImage)" alt="Post Image" class="post-image" />
+            <img src="@Url.Content(post.PostImage)" alt="Post Image" class="post-image"
+            />
 
             <div class="post-actions">
                 <i class="bi bi-heart like-btn"></i>

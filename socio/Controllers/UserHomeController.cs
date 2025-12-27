@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace SocioApp.Controllers
 {
-    [Authorize]
+    [Authorize (policy:"UserPages")]
     public class UserHomeController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;

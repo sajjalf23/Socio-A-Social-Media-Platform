@@ -1,16 +1,14 @@
+@using SocioApp.Models
+@model List<SocioApp.Models.ProfileViewModel>
+
 @{
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500;700&display=swap" rel="stylesheet">
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "All Users";
+}
 
-    var users = new List<dynamic> {
-new { Id = 1, Username = "john_doe", ProfileImage = "~/images/profile.png", PostCount = 12 },
-new { Id = 2, Username = "sara_khan", ProfileImage = "~/images/profile.png", PostCount = 8 },
-new { Id = 3, Username = "ali_ahmed", ProfileImage = "~/images/profile.png", PostCount = 5 },
-new { Id = 4, Username = "mina_yusuf", ProfileImage = "~/images/profile.png", PostCount = 7 },
-new { Id = 5, Username = "khalid_ali", ProfileImage = "~/images/profile.png", PostCount = 9 },
-new { Id = 6, Username = "nina_ahmad", ProfileImage = "~/images/profile.png", PostCount = 6 }
-};
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery AntiForgery
+@{
+    var antiForgeryToken = AntiForgery.GetAndStoreTokens(Context).RequestToken;
 }
 
 @section Styles {
@@ -18,8 +16,7 @@ new { Id = 6, Username = "nina_ahmad", ProfileImage = "~/images/profile.png", Po
         .users-container-wrapper {
             display: flex;
             justify-content: center;
-            margin-top: 30px;
-            margin-bottom: 30px;
+            margin: 30px 0;
         }
 
         .users-container {
@@ -40,7 +37,6 @@ new { Id = 6, Username = "nina_ahmad", ProfileImage = "~/images/profile.png", Po
             background: #fff;
             padding: 12px 15px;
             transition: background-color 0.2s ease;
-            flex-wrap: nowrap;
         }
 
         .user-card:hover {
@@ -84,11 +80,6 @@ new { Id = 6, Username = "nina_ahmad", ProfileImage = "~/images/profile.png", Po
             flex-shrink: 0;
         }
 
-        .user-actions a,
-        .user-actions form {
-            display: inline-block;
-        }
-
         .user-actions button {
             padding: 5px 10px;
             font-size: 13px;
@@ -129,41 +120,86 @@ new { Id = 6, Username = "nina_ahmad", ProfileImage = "~/images/profile.png", Po
             margin-top: 20px;
             font-size: 30px;
             font-weight: 600;
-        }
-
-        .users-heading {
             font-family: 'Roboto', sans-serif;
         }
     </style>
 }
 
-<div class="users-heading">Users</div>
-
+<div class="users-heading">All Registered Users</div>
 <div class="users-container-wrapper">
     <div class="users-container">
-        @foreach (var user in users)
+        @if (Model == null || !Model.Any())
         {
-            <div class="user-card">
-                <div class="user-info">
-                    <img src="@Url.Content(user.ProfileImage)" alt="@user.Username" />
-                    <div class="text">
-                        <h4>@user.Username</h4>
-                        <p>@user.PostCount posts</p>
+            <h1>No user found</h1>
+        }
+        else
+        {
+            @foreach (var user in Model)
+            {
+                <div class="user-card">
+                    <div class="user-info">
+                        <img src="@Url.Content(string.IsNullOrWhiteSpace(user.ProfileImage) ? "~/images/defaultprofile.png" : user.ProfileImage)"
+                            alt="@user.Username" />
+                        <div class="text">
+                            <h4>@user.Username</h4>
+                            <p>@user.PostsCount posts</p>
+                        </div>
+                    </div>
+
+                    <div class="user-actions">
+                        <a asp-action="ViewProfile" asp-controller="Profile" asp-route-id="@user.Id">
+                            <button class="btn-view">View Profile</button>
+                        </a>
+
+                        <a asp-action="Comments" asp-controller="AdminHome" asp-route-id="@user.Id">
+                            <button class="btn-comments">View Comments</button>
+                        </a>
+
+                        <button type="button" class="btn-ban-unban btn-delete" data-userid="@user.Id"
+                            data-isbanned="@user.IsBanned" data-url="@Url.Action("BanUnbanUser", "AdminHome")">
+                            @(user.IsBanned ? "Unban User" : "Ban User")
+                        </button>
+
                     </div>
                 </div>
-                <div class="user-actions">
-                    <a href="@Url.Action("Profile", "AdminHome", new { id = user.Id })">
-                        <button class="btn-view">View Profile</button>
-                    </a>
-                    <a href="@Url.Action("Comments", "AdminHome", new { id = user.Id })">
-                        <button class="btn-comments">View Comments</button>
-                    </a>
-                    <form method="post" asp-action="DeleteUser" asp-controller="AdminHome">
-                        <input type="hidden" name="id" value="@user.Id" />
-                        <button type="submit" class="btn-delete">Delete User</button>
-                    </form>
-                </div>
-            </div>
+            }
         }
     </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script>
+console.log("@Url.Action("BanUnbanUser","AdminHome")");
+    $(document).ready(function () {
+        $(".btn-ban-unban").click(function () {
+            var button = $(this);
+            var userId = button.data("userid");
+            var isBanned = button.data("isbanned");
+            var url = button.data("url");
+            console.log("Ban/Unban clicked for user:", userId, "Current banned status:", isBanned);
+
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    id: userId,
+                    __RequestVerificationToken: '@antiForgeryToken'
+                },
+                success: function (response) {
+                    console.log("AJAX success:", response);
+                    if (response.success) {
+                        button.text(response.isBanned ? "Unban User" : "Ban User");
+                        button.data("isbanned", response.isBanned);
+                    } else {
+                        alert("Error: " + response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX error:", xhr.responseText, "Status:", status, "Error:", error);
+                    alert("An error occurred:\n" + xhr.responseText);
+                }
+            });
+        });
+    });
+</script>

@@ -3,7 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using SocioApp.Data;
+using SocioApp.Data;using SocioApp.Models;
+using Microsoft.AspNetCore.Http;
+using Dapper;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using Microsoft.Data.SqlClient;
 
 namespace SocioApp.Services
 {
@@ -11,10 +16,23 @@ namespace SocioApp.Services
     {
         private readonly ApplicationDbContext _db;
 
-        public AdminService(ApplicationDbContext db)
+        public AdminService(ApplicationDbContext db,IConfiguration configuration)
         {
             _db = db;
+            _configuration = configuration;
         }
+
+         private readonly IConfiguration _configuration;
+
+         private SqlConnection GetConnection()
+        {
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new InvalidOperationException("Database connection string is not configured.");
+
+            return new SqlConnection(connectionString);
+        }
+
 
         public async Task<List<int>> GetUsersLast7DaysAsync()
         {
@@ -37,6 +55,25 @@ namespace SocioApp.Services
             return result;
         }
 
+           private string GetCloudinaryPublicId(string mediaUrl)
+        {
+            try
+            {
+                var uri = new Uri(mediaUrl);
+                var path = uri.AbsolutePath;
+                var parts = path.Split('/');
+                int uploadIndex = Array.IndexOf(parts, "upload");
+                if (uploadIndex == -1 || uploadIndex + 2 >= parts.Length) return "";
+                string publicId = string.Join("/", parts[(uploadIndex + 2)..]);
+                publicId = System.IO.Path.ChangeExtension(publicId, null);
+                return publicId;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return "";
+            }
+        }
         public async Task<List<int>> GetPostsLast7DaysAsync()
         {
             var result = new List<int>();
@@ -88,7 +125,7 @@ namespace SocioApp.Services
                 ["TotalPosts"] = await _db.Posts.CountAsync(),
                 ["TotalComments"] = await _db.Comments.CountAsync(),
                 ["TotalLikes"] = await _db.PostReactions.CountAsync()
-            };
+            }; 
         }
     }
 }

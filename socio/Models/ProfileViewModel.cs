@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 
 namespace SocioApp.Models
-{ 
+{  
     public class ProfileViewModel
     {
         public string Id { get; set; } = string.Empty;

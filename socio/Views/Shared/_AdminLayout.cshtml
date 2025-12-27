@@ -185,7 +185,8 @@
                 <img src="~/images/landing-logo-img.png" alt="Logo" class="logo" />
             </a>
             <div class="nav-links">
-                <a asp-controller="AdminHome" asp-action="Index"><i class="bi bi-house-fill"></i> Dashboard</a>
+                <a asp-controller="UserHome" asp-action="Index"><i class="bi bi-house-fill"></i> UserHome </a>
+                <a asp-controller="AdminHome" asp-action="Index"><i class="bi bi-bar-chart-fill"></i> Dashboard </a> 
                 <a asp-controller="AdminHome" asp-action="AllUsers"><i class="bi bi-people-fill"></i> All Users</a>
                 <a asp-controller="AdminHome" asp-action="Search"><i class="bi bi-search"></i> Search </a>
 
@@ -212,13 +213,14 @@
         </form>
 
     </div>
-<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+    <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
     <div class="main-content">
         @RenderBody()
     </div>
 
     <div class="bottom-navbar d-flex d-md-none">
-        <a asp-controller="AdminHome" asp-action="Index"><i class="bi bi-house-fill"></i></a>
+        <a asp-controller="UserHome" asp-action="Index"><i class="bi bi-house-fill"></i></a>
+        <a asp-controller="AdminHome" asp-action="Index"><i class="bi bi-bar-chart-fill"></i> </a>
         <a asp-controller="AdminHome" asp-action="AllUsers"><i class="bi bi-people-fill"></i></a>
         <a asp-controller="AdminHome" asp-action="Search"><i class="bi bi-search"></i> </a>
 
@@ -233,29 +235,29 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/1.2.0/signalr.min.js"></script>
 <script>
     const connection = new signalR.HubConnectionBuilder()
-    .withUrl("/notificationHub")
-    .build();
+        .withUrl("/notificationHub")
+        .build();
 
-connection.start().then(() => console.log("SignalR connected"))
-    .catch(err => console.error(err.toString()));
+    connection.start().then(() => console.log("SignalR connected"))
+        .catch(err => console.error(err.toString()));
 
-// Function to show persistent toast
-function showToast(htmlMessage) {
-    const toast = $(`
+    // Function to show persistent toast
+    function showToast(htmlMessage) {
+        const toast = $(`
         <div class="toast-message">
             <span>${htmlMessage}</span>
             <span class="close-btn">&times;</span>
         </div>
     `);
 
-    toast.find('.close-btn').click(() => toast.remove());
+        toast.find('.close-btn').click(() => toast.remove());
 
-    $('#toast-container').append(toast);
-}
+        $('#toast-container').append(toast);
+    }
 
-// Receive notification from hub
-connection.on("ReceiveNotification", function(message) {
-    showToast(message);
-});
+    // Receive notification from hub
+    connection.on("ReceiveNotification", function (message) {
+        showToast(message);
+    });
 
 </script>

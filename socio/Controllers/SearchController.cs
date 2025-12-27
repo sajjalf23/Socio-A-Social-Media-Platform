@@ -8,7 +8,7 @@ using SocioApp.Models;
 namespace SocioApp.Controllers
 {
 
-    [Authorize]
+    [Authorize(policy:"UserPages")]
     public class SearchController : Controller
     {
          private readonly IProfileService _profileService;
