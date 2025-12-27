@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocioApp.Tests", "SocioApp.Tests.csproj", "{32436FA7-D556-0136-6629-63629A0415C0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{32436FA7-D556-0136-6629-63629A0415C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32436FA7-D556-0136-6629-63629A0415C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32436FA7-D556-0136-6629-63629A0415C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32436FA7-D556-0136-6629-63629A0415C0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {34912ECF-70A4-4409-9096-B4B082B6F2AA}
+	EndGlobalSection
+EndGlobal

@@ -1,6 +1,8 @@
+E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\xunit.abstractions.dll
 E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\appsettings.Development.json
 E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\appsettings.json
 E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\socio.staticwebassets.runtime.json
+E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\xunit.runner.visualstudio.testadapter.dll
 E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\socio.exe
 E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\socio.deps.json
 E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\socio.runtimeconfig.json
@@ -96,6 +98,9 @@ E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\System.Runtime.Caching.d
 E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\System.Security.Cryptography.ProtectedData.dll
 E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\System.Security.Permissions.dll
 E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\System.Windows.Extensions.dll
+E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\xunit.assert.dll
+E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\xunit.core.dll
+E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\xunit.execution.dotnet.dll
 E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\af\Humanizer.resources.dll
 E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\ar\Humanizer.resources.dll
 E:\Socio-A-Social-Media-Platform\socio\bin\Debug\net8.0\az\Humanizer.resources.dll
