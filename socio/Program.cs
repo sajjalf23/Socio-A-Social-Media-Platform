@@ -32,6 +32,14 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminPages", policy => policy.RequireRole("Admin"));
     options.AddPolicy("UserPages", policy => policy.RequireRole("User", "Admin"));
 });
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("CanHideComment", policy =>
+        policy.RequireClaim("CanHideComment", "true"));
+
+    options.AddPolicy("CanBanUser", policy =>
+        policy.RequireClaim("CanBanUser", "true"));
+});
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();

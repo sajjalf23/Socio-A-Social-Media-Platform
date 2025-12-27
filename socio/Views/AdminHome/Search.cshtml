@@ -150,6 +150,14 @@
     </style>
 }
 @model List<SocioApp.Models.ProfileViewModel>
+@using Microsoft.AspNetCore.Identity
+@using SocioApp.Models
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@{
+    var currentUser = await UserManager.GetUserAsync(User);
+    var currentUserId = currentUser?.Id;
+}
 
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
@@ -197,10 +205,10 @@
                         <a asp-controller="AdminHome" asp-action="Comments" asp-route-id="@user.Id">
                             <button class="btn-comments">View Comments</button>
                         </a>
-
+ 
                         <form class="ban-form">
                             @Html.AntiForgeryToken()
-
+                            @if(currentUserId != user.Id){
                             <button type="button"
                                     class="btn-delete js-ban-toggle"
                                     data-user-id="@user.Id"
@@ -208,6 +216,7 @@
                                     data-url="@Url.Action("BanUnbanUser", "AdminHome")">
                                 @(user.IsBanned ? "Unban User" : "Ban User")
                             </button>
+                            }
                         </form>
                     </div>
                 </div>

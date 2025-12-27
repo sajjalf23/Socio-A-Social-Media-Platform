@@ -1,6 +1,9 @@
 @using SocioApp.Models
 @model List<SocioApp.Models.ProfileViewModel>
-
+@using Microsoft.AspNetCore.Identity 
+@inject UserManager<ApplicationUser> UserManager 
+@inject SignInManager<ApplicationUser> SignInManager 
+@{ var currentUser = await UserManager.GetUserAsync(User); var currentUserId = currentUser?.Id; }
 @{
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500;700&display=swap" rel="stylesheet">
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
@@ -135,7 +138,7 @@
         else
         {
             @foreach (var user in Model)
-            {
+            { 
                 <div class="user-card">
                     <div class="user-info">
                         <img src="@Url.Content(string.IsNullOrWhiteSpace(user.ProfileImage) ? "~/images/defaultprofile.png" : user.ProfileImage)"
@@ -154,12 +157,12 @@
                         <a asp-action="Comments" asp-controller="AdminHome" asp-route-id="@user.Id">
                             <button class="btn-comments">View Comments</button>
                         </a>
-
+                        @if(currentUserId != user.Id){
                         <button type="button" class="btn-ban-unban btn-delete" data-userid="@user.Id"
                             data-isbanned="@user.IsBanned" data-url="@Url.Action("BanUnbanUser", "AdminHome")">
                             @(user.IsBanned ? "Unban User" : "Ban User")
                         </button>
-
+                        }
                     </div>
                 </div>
             }

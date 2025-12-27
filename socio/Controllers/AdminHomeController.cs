@@ -131,6 +131,7 @@ namespace socio.Controllers
 
 
         [HttpPost]
+        [Authorize(Policy = "CanHideComment")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> HideUnhideComment(int id)
         {
@@ -157,6 +158,7 @@ namespace socio.Controllers
         // }
 
         [HttpPost]
+        [Authorize(Policy = "CanBanUser")]
         public async Task<IActionResult> BanUnbanUser(string id)
         {
             Console.WriteLine($"BanUnbanUser called with ID: {id}");
