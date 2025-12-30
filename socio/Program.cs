@@ -7,7 +7,8 @@ using SocioApp.Services;
 using Microsoft.AspNetCore.SignalR;
 using SocioApp.Hubs;
 using System.Security.Claims;
-
+using SocioApp.Authorization;
+using Microsoft.AspNetCore.Authorization;  
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +49,7 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IAuthorizationHandler, EditPostAuthorizationHandler>();
 
 var cloudinarySettings = builder.Configuration.GetSection("Cloudinary");
 var account = new Account(

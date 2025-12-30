@@ -11,11 +11,12 @@ using System.Text.Json;
 using System.Collections.Generic;
 using SocioApp.Services;
 using SocioApp.Hubs;
+using SocioApp.Authorization;
 
 
 namespace SocioApp.Controllers
 {
-    [Authorize (policy:"UserPages")]
+    [Authorize(policy: "UserPages")]
     public class PostController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -26,15 +27,17 @@ namespace SocioApp.Controllers
         private readonly ICommentService _commentService;
 
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IAuthorizationService _authorizationService;
 
         public PostController(UserManager<ApplicationUser> userManager, IPostService postService,
-        ICommentService commentService, IProfileService profileService, IHubContext<NotificationHub> hubContext)
+        ICommentService commentService, IProfileService profileService, IHubContext<NotificationHub> hubContext, IAuthorizationService authorizationService)
         {
             _userManager = userManager;
             _postService = postService;
             _commentService = commentService;
             _profileService = profileService;
             _hubContext = hubContext;
+            _authorizationService = authorizationService;
         }
         [HttpGet]
         public async Task<IActionResult> Index(int id = 1)
@@ -93,6 +96,16 @@ namespace SocioApp.Controllers
             if (post == null)
                 return NotFound();
 
+            var authorizationResult = await _authorizationService.AuthorizeAsync(
+        User,
+        post,
+        new EditPostRequirement());
+
+            if (!authorizationResult.Succeeded)
+            {
+                return Forbid();
+            }
+
             ViewData["Post"] = new
             {
                 Id = post.PostId,
@@ -109,12 +122,27 @@ namespace SocioApp.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
+            var post = await _postService.GetPostByIdAsync(postId);
+
+            if (post == null)
+                return NotFound();
+
+            var authorizationResult = await _authorizationService.AuthorizeAsync(
+        User,
+        post,
+        new EditPostRequirement());
+
+            if (!authorizationResult.Succeeded)
+            {
+                return Forbid();
+            }
+
             var success = await _postService.EditPostAsync(postId, user.Id, caption, imagefile);
 
             TempData[success ? "Message" : "Error"] =
                 success ? "Post updated successfully!" : "Could not update post.";
 
-             return RedirectToAction("Index", "UserHome");
+            return RedirectToAction("Index", "UserHome");
         }
 
         [HttpPost]
@@ -122,13 +150,26 @@ namespace SocioApp.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
+            var post = await _postService.GetPostByIdAsync(id);
 
+            if (post == null)
+                return NotFound();
+
+            var authorizationResult = await _authorizationService.AuthorizeAsync(
+        User,
+        post,
+        new EditPostRequirement());
+
+            if (!authorizationResult.Succeeded)
+            {
+                return Forbid();
+            }
             var success = await _postService.DeletePostAsync(id, user.Id);
 
             TempData[success ? "Message" : "Error"] =
                 success ? "Post deleted successfully!" : "Could not delete post.";
 
-             return RedirectToAction("Index", "UserHome");
+            return RedirectToAction("Index", "UserHome");
         }
 
         [HttpPost]
@@ -194,7 +235,7 @@ namespace SocioApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddComment(int postId, string content,string postownerid)
+        public async Task<IActionResult> AddComment(int postId, string content, string postownerid)
         {
             if (string.IsNullOrWhiteSpace(content))
                 return Json(new { success = false, message = "Comment cannot be empty." });
@@ -224,7 +265,7 @@ namespace SocioApp.Controllers
                     {
                         comment.CommentId,
                         comment.UserId,
-                        CommentUserName = user.UserName, 
+                        CommentUserName = user.UserName,
                         comment.Content,
                         CreatedAt = comment.CreatedAt.ToString("g")
                     }
