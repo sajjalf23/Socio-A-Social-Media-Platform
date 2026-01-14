@@ -1,0 +1,208 @@
+@using SocioApp.Models
+@model List<SocioApp.Models.ProfileViewModel>
+@using Microsoft.AspNetCore.Identity 
+@inject UserManager<ApplicationUser> UserManager 
+@inject SignInManager<ApplicationUser> SignInManager 
+@{ var currentUser = await UserManager.GetUserAsync(User); var currentUserId = currentUser?.Id; }
+@{
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500;700&display=swap" rel="stylesheet">
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery AntiForgery
+@{
+    var antiForgeryToken = AntiForgery.GetAndStoreTokens(Context).RequestToken;
+}
+
+@section Styles {
+    <style>
+        .users-container-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .users-container {
+            max-width: 600px;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            padding: 12px 15px;
+            transition: background-color 0.2s ease;
+        }
+
+        .user-card:hover {
+            background-color: #f8f8f8;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-info img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ccc;
+        }
+
+        .user-info .text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-info h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .user-info p {
+            font-size: 13px;
+            color: #666;
+            margin: 2px 0 0;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .user-actions button {
+            padding: 5px 10px;
+            font-size: 13px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-view,
+        .btn-comments {
+            background-color: black;
+            color: white;
+        }
+
+        .btn-delete {
+            background-color: #c82333;
+            color: white;
+        }
+
+        @@media (max-width: 768px) {
+            .users-container {
+                max-width: 90%;
+            }
+
+            .user-card {
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+
+            .user-actions {
+                margin-top: 8px;
+            }
+        }
+
+        .users-heading {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 30px;
+            font-weight: 600;
+            font-family: 'Roboto', sans-serif;
+        }
+    </style>
+}
+
+<div class="users-heading">All Registered Users</div>
+<div class="users-container-wrapper">
+    <div class="users-container">
+        @if (Model == null || !Model.Any())
+        {
+            <h1>No user found</h1>
+        }
+        else
+        {
+            @foreach (var user in Model)
+            { 
+                <div class="user-card">
+                    <div class="user-info">
+                        <img src="@Url.Content(string.IsNullOrWhiteSpace(user.ProfileImage) ? "~/images/defaultprofile.png" : user.ProfileImage)"
+                            alt="@user.Username" />
+                        <div class="text">
+                            <h4>@user.Username</h4>
+                            <p>@user.PostsCount posts</p>
+                        </div>
+                    </div>
+
+                    <div class="user-actions">
+                        <a asp-action="ViewProfile" asp-controller="Profile" asp-route-id="@user.Id">
+                            <button class="btn-view">View Profile</button>
+                        </a>
+
+                        <a asp-action="Comments" asp-controller="AdminHome" asp-route-id="@user.Id">
+                            <button class="btn-comments">View Comments</button>
+                        </a>
+                        @if(currentUserId != user.Id){
+                        <button type="button" class="btn-ban-unban btn-delete" data-userid="@user.Id"
+                            data-isbanned="@user.IsBanned" data-url="@Url.Action("BanUnbanUser", "AdminHome")">
+                            @(user.IsBanned ? "Unban User" : "Ban User")
+                        </button>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script>
+console.log("@Url.Action("BanUnbanUser","AdminHome")");
+    $(document).ready(function () {
+        $(".btn-ban-unban").click(function () {
+            var button = $(this);
+            var userId = button.data("userid");
+            var isBanned = button.data("isbanned");
+            var url = button.data("url");
+            console.log("Ban/Unban clicked for user:", userId, "Current banned status:", isBanned);
+
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    id: userId,
+                    __RequestVerificationToken: '@antiForgeryToken'
+                },
+                success: function (response) {
+                    console.log("AJAX success:", response);
+                    if (response.success) {
+                        button.text(response.isBanned ? "Unban User" : "Ban User");
+                        button.data("isbanned", response.isBanned);
+                    } else {
+                        alert("Error: " + response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX error:", xhr.responseText, "Status:", status, "Error:", error);
+                    alert("An error occurred:\n" + xhr.responseText);
+                }
+            });
+        });
+    });
+</script>

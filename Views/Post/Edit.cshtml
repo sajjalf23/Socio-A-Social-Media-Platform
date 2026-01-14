@@ -1,0 +1,117 @@
+@{
+    ViewData["Title"] = "Edit Post";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    dynamic post = ViewData["Post"] ?? new { ImageUrl = "", Caption = "" };
+}
+
+<link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+<link href="~/lib/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<style>
+    .edit-container {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    .edit-card {
+        width: 420px;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        padding: 20px;
+        text-align: center;
+    }
+
+    .image-wrapper {
+        position: relative;
+        margin-bottom: 15px;
+    }
+
+    .image-wrapper img {
+        width: 100%;
+        max-height: 250px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .change-image-btn {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background-color: rgba(0,0,0,0.6);
+        color: white;
+        border: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    textarea {
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid #dbdbdb;
+        padding: 10px;
+        height: 70px;
+        margin-bottom: 15px;
+    }
+
+    .update-btn {
+        width: 100%;
+        background: #0095f6;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+</style>
+
+<div class="edit-container">
+    <div class="edit-card">
+        <h2>Edit Post</h2>
+
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+          
+            <input type="hidden" name="postId" value="@post.Id" />
+
+            <div class="image-wrapper">
+                <img id="previewImage" src="@Url.Content(post.ImageUrl)" alt="Post Image">
+                <button type="button" class="change-image-btn" id="changeImageBtn">
+                    <i class="bi bi-camera"></i> Change Image
+                </button>
+
+                <input type="file" id="imageInput" name="imagefile" accept="image/*" hidden>
+            </div>
+
+            <textarea name="caption">@post.Caption</textarea>
+
+            <button type="submit" class="update-btn">Update Post</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    $("#changeImageBtn").on("click", function () {
+        $("#imageInput").click();
+    });
+
+    $("#imageInput").on("change", function () {
+        const file = this.files[0];
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                $("#previewImage").attr("src", e.target.result);
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+}

@@ -1,0 +1,235 @@
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Admin Dashboard";
+
+    var usersLast7Days = ViewData["UsersLast7Days"] as List<int> ?? new List<int>();
+    var postsLast7Days = ViewData["PostsLast7Days"] as List<int> ?? new List<int>();
+    var commentsLast7Days = ViewData["CommentsLast7Days"] as List<int> ?? new List<int>();
+    var likesLast7Days = ViewData["LikesLast7Days"] as List<int> ?? new List<int>();
+
+    var totalUsers = ViewData["TotalUsers"] as int? ?? (usersLast7Days.Any() ? usersLast7Days.Last() : 0);
+    var totalPosts = ViewData["TotalPosts"] as int? ?? (postsLast7Days.Any() ? postsLast7Days.Last() : 0);
+    var totalComments = ViewData["TotalComments"] as int? ?? (commentsLast7Days.Any() ? commentsLast7Days.Last() : 0);
+    var totalLikes = ViewData["TotalLikes"] as int? ?? (likesLast7Days.Any() ? likesLast7Days.Last() : 0);
+
+    Func<List<int>, string> calcDailyChange = (list) =>
+    {
+        if (list == null || list.Count < 2) return "N/A";
+        int last = list[list.Count - 1];
+        int prev = list[list.Count - 2];
+        if (prev == 0) return "N/A";
+        var change = ((double)(last - prev) / prev) * 100;
+        var color = change >= 0 ? "green" : "red";
+        var symbol = change >= 0 ? "▲" : "▼";
+        return $"<span style='color:{color}; font-weight:600;'>{symbol} {Math.Abs(change):F1}%</span> vs yesterday";
+    };
+
+    string usersChange = calcDailyChange(usersLast7Days);
+    string postsChange = calcDailyChange(postsLast7Days);
+    string commentsChange = calcDailyChange(commentsLast7Days);
+    string likesChange = calcDailyChange(likesLast7Days);
+}
+
+@section Styles {
+    <style>
+        :root {
+            --bg-card: #fff;
+            --shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            --radius: 10px;
+        }
+
+        body {
+            background: #f6f8fa;
+        }
+
+        .widget-card {
+            background-color: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 18px 15px !important;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .widget-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+        }
+
+        .widget-card h4 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .widget-card h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .chart-card {
+            background-color: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 18px !important;
+            text-align: center;
+        }
+
+        .chart-card h5 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #444;
+        }
+        .chart-card canvas {
+            width: 100% !important;
+            height: 220px !important;
+            max-width: 480px;
+            margin: auto;
+        }
+
+        @@media (max-width: 576px) {
+            .chart-card canvas {
+                height: 180px !important;
+                max-width: 360px;
+            }
+        }
+    </style>
+}
+
+<div class="container my-3">
+    <div class="row g-3">
+
+    <div class="col-6 col-md-3">
+        @await Component.InvokeAsync("StatWidget",
+            new { title = "Total Users", total = totalUsers, changeHtml = usersChange })
+    </div>
+
+    <div class="col-6 col-md-3">
+        @await Component.InvokeAsync("StatWidget",
+            new { title = "Total Posts", total = totalPosts, changeHtml = postsChange })
+    </div>
+
+    <div class="col-6 col-md-3">
+        @await Component.InvokeAsync("StatWidget",
+            new { title = "Total Comments", total = totalComments, changeHtml = commentsChange })
+    </div>
+
+    <div class="col-6 col-md-3">
+        @await Component.InvokeAsync("StatWidget",
+            new { title = "Total Likes", total = totalLikes, changeHtml = likesChange })
+    </div>
+
+</div>
+
+</div>
+
+<div class="container mt-4">
+    <div class="row g-4">
+
+        <div class="col-12 col-lg-6">
+            <div class="chart-card">
+                <h5>Users (Last 7 Days)</h5>
+                <canvas id="usersChart"></canvas>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <div class="chart-card">
+                <h5>Posts (Last 7 Days)</h5>
+                <canvas id="postsChart"></canvas>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <div class="chart-card">
+                <h5>Comments (Last 7 Days)</h5>
+                <canvas id="commentsChart"></canvas>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <div class="chart-card">
+                <h5>Likes (Last 7 Days)</h5>
+                <canvas id="likesChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const usersData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(usersLast7Days));
+        const postsData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(postsLast7Days));
+        const commentsData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(commentsLast7Days));
+        const likesData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(likesLast7Days));
+
+        const days = ["Day -6", "Day -5", "Day -4", "Day -3", "Day -2", "Yesterday", "Today"];
+
+        const chartOptions = {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                title: { display: false }
+            },
+            scales: {
+                y: { 
+                    grid: { drawBorder: false },
+                    beginAtZero: true
+                },
+                x: { grid: { display: false } }
+            }
+        };
+
+        function renderBarChart(id, data, color) {
+            new Chart(document.getElementById(id), {
+                type: 'bar',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: color,
+                        borderRadius: 6,
+                        barThickness: 8
+                    }]
+                },
+                options: chartOptions
+            });
+        }
+
+        function renderLineChart(id, data, color) {
+            new Chart(document.getElementById(id), {
+                type: 'line',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        data: data,
+                        borderColor: color,
+                        backgroundColor: color + "22",
+                        fill: false,
+                        tension: 0.2,
+                        pointRadius: 2,
+                        pointHoverRadius: 4
+                    }]
+                },
+                options: chartOptions
+            });
+        }
+
+        if (usersData && usersData.length > 0) {
+            renderBarChart("usersChart", usersData, "#0095f6");
+        }
+        if (postsData && postsData.length > 0) {
+            renderBarChart("postsChart", postsData, "#28a745");
+        }
+        if (commentsData && commentsData.length > 0) {
+            renderLineChart("commentsChart", commentsData, "#ffc107");
+        }
+        if (likesData && likesData.length > 0) {
+            renderLineChart("likesChart", likesData, "#e0245e");
+        }
+    </script>
+}

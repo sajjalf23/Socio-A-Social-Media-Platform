@@ -1,0 +1,10 @@
+﻿@{
+    ViewData["Title"] = "Error";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    // Use a dummy request ID since we don't have ErrorViewModel
+    var requestId = "dummy-request-id";
+}
+
+<h1 class="text-danger">Oops! Something went wrong.</h1>
+<p>Request ID: @requestId</p>
+<p>Please try again later.</p>

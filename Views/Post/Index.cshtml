@@ -1,0 +1,404 @@
+@using SocioApp.Models
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var display = ViewBag.Display;
+    var post = display.Post as Post;
+    var CurrentUser = display.CurrentUser as UserCookieModel;
+    var comments = display.Comments as List<Comment> ?? new List<Comment>();
+    var postuser = display.postuser as ProfileViewModel;
+
+    // Post data
+    var postid = post?.PostId ?? 0;
+    var postimage = !string.IsNullOrWhiteSpace(post?.MediaUrl) ? post.MediaUrl : "/images/noimage.png";
+    var postcontent = post?.Content ?? "";
+    var postupdateat = post?.UpdatedAt ?? post?.CreatedAt ?? DateTime.UtcNow;
+    var postlikes = post?.LikesCount ?? 0;
+
+    // User data
+    var postUser = postuser?.Username ?? "";
+    var postuserimg = !string.IsNullOrWhiteSpace(postuser?.ProfileImage) ? postuser.ProfileImage :
+    "/images/defaultprofile.png";
+    var postuserid = post?.UserId ?? "";
+    var currentUser = CurrentUser?.Name ?? "";
+    var currentuserid = CurrentUser?.Id ?? "";
+}
+
+
+<style>
+    .post-container {
+        max-width: 650px;
+        margin: 20px auto;
+        display: flex;
+        flex-direction: column;
+        background-color: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        padding: 10px;
+    }
+
+    .post-image img {
+        width: 100%;
+        max-height: 600px;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+
+    .post-details {
+        padding: 15px 0;
+    }
+
+    .post-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .post-header img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .post-username {
+        font-weight: 600;
+    }
+
+    .time-ago {
+        font-size: 13px;
+        color: #8e8e8e;
+    }
+
+    .post-caption {
+        margin: 10px 0;
+        font-size: 15px;
+    }
+
+    .comments {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .comment {
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+
+    .comment strong {
+        font-weight: 600;
+        margin-right: 5px;
+    }
+
+    .post-actions {
+        display: flex;
+        gap: 15px;
+        font-size: 22px;
+        margin-bottom: 8px;
+        cursor: pointer;
+    }
+
+    .likes-count {
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+    .add-comment {
+        display: flex;
+        gap: 10px;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+    }
+
+    .add-comment input {
+        flex: 1;
+        border: none;
+        outline: none;
+        padding: 6px;
+        font-size: 14px;
+    }
+
+    .add-comment button {
+        border: none;
+        background: none;
+        color: #0095f6;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .delete-btn {
+        margin-top: 10px;
+        background-color: #000;
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .delete-btn:hover {
+        background-color: #333;
+    }
+
+    .userfunc {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .userfunc .delete-btn {
+        padding: 6px 15px;
+    }
+
+    .comments {
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: 10px;
+    }
+
+    .comment {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+        padding: 6px 10px;
+        margin-bottom: 6px;
+        border-radius: 5px;
+    }
+
+    .comment-text {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        flex: 1;
+    }
+
+    .comment strong {
+        font-weight: 600;
+    }
+
+    .delete-comment-btn {
+        background-color: #d9363e;
+        color: #fff;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 12px;
+        margin-left: 10px;
+    }
+
+    .delete-comment-btn:hover {
+        background-color: #d9363e;
+    }
+
+
+    @@media(max-width: 768px) {
+        .post-container {
+            margin: 20px 10px;
+        }
+
+        .post-image img {
+            max-height: 400px;
+        }
+    }
+</style>
+
+
+
+<div class="post-container">
+    <div class="post-image">
+        <img src="@(postimage)" alt="Post Image" />
+    </div>
+
+    <div class="post-details">
+        <div class="post-header">
+            <img src="@(postuserimg)" alt="Profile Image" />
+            <div>
+                <div class="post-username" onclick="window.location.href='@Url.Action("ViewProfile", "Profile", new { id = postuserid })'" >@postUser</div>
+                <div class="time-ago">@postupdateat.ToString("g")</div>
+            </div>
+        </div>
+
+        <div class="post-caption"><strong>@postUser</strong> @postcontent</div>
+
+        <div class="post-actions">
+            <i class="bi bi-heart" id="likeBtn" title="Like"></i>
+            <i class="bi bi-hand-thumbs-down" id="dislikeBtn" title="Dislike"></i>
+            <i class="bi bi-chat"></i>
+        </div>
+
+        <div class="likes-count" id="likesCount">@postlikes likes</div>
+
+        <div class="comments" id="commentsSection">
+            @foreach (var c in comments)
+            {
+                <div class="comment" data-commentid="@c.CommentId">
+                    <div class="comment-text">
+                        <a href="@Url.Action("ViewProfile", "Profile", new { id = c.UserId })">
+                            <strong>@c.CommentUserName</strong>
+                        </a>
+                        <span>@c.Content</span>
+                    </div>
+
+                    @if (currentuserid?.Trim() == c.UserId?.Trim())
+                    {
+                        <button class="delete-comment-btn">Delete</button>
+                    }
+                </div>
+            }
+        </div>
+
+
+        <div class="add-comment">
+            <input type="text" id="commentInput" placeholder="Add a comment..." />
+            <button id="postBtn">Post</button>
+        </div>
+
+        @if (!string.IsNullOrEmpty(currentuserid?.Trim()) && currentuserid.Trim() == postuserid?.Trim())
+        {
+            <div class="userfunc">
+                <form method="post" asp-action="Delete" asp-route-id="@postid">
+                    <button type="submit" class="delete-btn">Delete Post</button>
+                </form>
+                <form method="get" asp-action="Edit" asp-route-id="@postid">
+                    <button type="submit" class="delete-btn">Edit Post</button>
+                </form>
+            </div>
+        }
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        var postid = @postid;
+        var $commentsSection = $('#commentsSection');
+        var $input = $('#commentInput');
+        var $postBtn = $('#postBtn');
+        var $likesCountEl = $('#likesCount');
+        var $likeBtn = $('#likeBtn');
+        var $dislikeBtn = $('#dislikeBtn');
+        var postuserid = "@postuserid";
+
+
+        var liked = false;
+        var disliked = false;
+
+        function escapeHtml(unsafe) {
+            return unsafe.replace(/[&<>"'/]/g, function (m) {
+                return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;", "/": "&#x2F;" }[m];
+            });
+        }
+
+        function updateReactionUI(res) {
+            $likesCountEl.text(res.likes + ' likes');
+            $likeBtn.toggleClass('bi-heart-fill', res.liked)
+                .toggleClass('bi-heart', !res.liked)
+                .css('color', res.liked ? '#e0245e' : '#262626');
+            $dislikeBtn.toggleClass('bi-hand-thumbs-down-fill', res.disliked)
+                .toggleClass('bi-hand-thumbs-down', !res.disliked)
+                .css('color', res.disliked ? '#1e90ff' : '#262626');
+            liked = res.liked;
+            disliked = res.disliked;
+        }
+
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
+        $likeBtn.click(function () {
+            $.ajax({
+                url: '/Post/Like',
+                type: 'POST',
+                data: { postId: postid },
+                headers: { 'RequestVerificationToken': token },
+                success: function (res) {
+                    if (res.success) updateReactionUI(res);
+                    else alert('Error liking post.');
+                },
+                error: function (err) { console.error(err); alert('Server error.'); }
+            });
+        });
+
+        $dislikeBtn.click(function () {
+            $.ajax({
+                url: '/Post/DisLike',
+                type: 'POST',
+                data: { postId: postid },
+                headers: { 'RequestVerificationToken': token },
+                success: function (res) {
+                    if (res.success) updateReactionUI(res);
+                    else alert('Error disliking post.');
+                },
+                error: function (err) { console.error(err); alert('Server error.'); }
+            });
+        });
+
+        $.get('/Post/GetUserReaction', { postId: postid }, function (res) {
+            if (res.success) updateReactionUI(res);
+        });
+
+        function postComment() {
+            var text = $input.val().trim();
+            if (!text) return;
+
+            $.ajax({
+                url: '/Post/AddComment',
+                type: 'POST',
+                data: { postId: postid, content: text ,postownerid : postuserid},
+                headers: { 'RequestVerificationToken': token },
+                success: function (res) {
+                    if (res.success) {
+                        var c = res?.comment;
+                        var username = c?.commentUserName || "Unknown";
+                        var content = c.content || "";
+                        var $div = $('<div>').addClass('comment').attr('data-commentid', c.commentId);
+
+                        var $commentText = $('<div>').addClass('comment-text')
+                            .append('<a href="/Profile/ViewProfile/' + c.UserId + '"><strong>' + escapeHtml(username) + '</strong></a>')
+                            .append('<span>' + escapeHtml(content) + '</span>');
+
+                        $div.append($commentText);
+
+                        $div.append('<button class="delete-comment-btn">Delete</button>');
+
+                        $commentsSection.append($div);
+                        $input.val('');
+                        $commentsSection.scrollTop($commentsSection[0].scrollHeight);
+                    } else {
+                        alert(res.message || 'Error posting comment.');
+                    }
+                }
+                ,
+                error: function (err) {
+                    console.error(err);
+                    alert('Server error.');
+                }
+            });
+        }
+
+
+        $postBtn.click(postComment);
+        $input.keydown(function (e) { if (e.key === 'Enter') { e.preventDefault(); postComment(); } });
+
+        $commentsSection.on('click', '.delete-comment-btn', function () {
+            var $commentDiv = $(this).closest('.comment');
+            var commentId = $commentDiv.data('commentid');
+            $.ajax({
+                url: '/Post/DeleteComment',
+                type: 'POST',
+                data: { commentId: commentId },
+                headers: { 'RequestVerificationToken': token },
+                success: function (res) {
+                    if (res.success) $commentDiv.remove();
+                    else alert(res.message || 'Error deleting comment.');
+                },
+                error: function (err) { console.error(err); alert('Server error.'); }
+            });
+        });
+    });
+</script> 
