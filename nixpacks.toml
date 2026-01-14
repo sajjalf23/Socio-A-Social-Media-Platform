@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["dotnet-sdk_8"]
+
+[phases.install]
+cmds = ["dotnet restore socio.csproj"]  # REMOVE extra "socio/"
+
+[phases.build]
+cmds = ["dotnet publish socio.csproj -c Release -o /app/out"]
+
+[start]
+cmd = "cd /app && dotnet /app/out/socio.dll"
