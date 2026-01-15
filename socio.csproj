@@ -1,16 +1,12 @@
 
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
+   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <!-- REMOVE THIS LINE: <PlatformTarget>x86</PlatformTarget> -->
-    <!-- REMOVE THIS LINE: <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest> -->
-    <!-- ADD THIS: -->
-    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
-    <SelfContained>false</SelfContained>
     <OutputType>Exe</OutputType>
+    <!-- Remove RuntimeIdentifier for framework-dependent deployment -->
   </PropertyGroup>
 
   <ItemGroup>
