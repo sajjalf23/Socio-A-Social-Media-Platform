@@ -65,6 +65,7 @@
 - **Search for other users**
 - **View user profiles**
 
+---
 ### 🛠️ Admin Features
 #### **Dashboard & Analytics**
 - Overview of platform statistics
@@ -82,22 +83,12 @@
 - View all comments by specific users
 - User activity monitoring
 - Hide / Unhide comments
-
-## 🎥 Live Demo
-
-### 📹 Full Walkthrough (Desktop)
-[![Watch Desktop Demo](https://img.shields.io/badge/▶_Desktop_Walkthrough-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://github.com/sajjalf23/Socio-A-Social-Media-Platform/raw/main/1_mQLwqi9J.mp4)
-
-### 📱 Quick Demo (Mobile)
-[![Watch Mobile Demo](https://img.shields.io/badge/📱_Mobile_Demo-007ACC?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sajjalf23/Socio-A-Social-Media-Platform/raw/main/M1.mp4)
-
-### 🌐 Live Application
-**🔗 URL:** [https://socio-production.up.railway.app](https://socio-a-social-media-platform-production.up.railway.app/)
-
 ---
 ## 🧪 Testing (branch = tests)
 - **Unit tests** for components of a controller
 - **Integration tests** for a controller
+
+---
 
 ## 🎓 Concepts Covered
 - **View Components**
@@ -115,4 +106,16 @@
 - **Dapper** (Micro-ORM)
 - **Dependency Injection**
 - **MVC & Repository Pattern**
+
+---
+## 🎥 Live Demo
+
+### 📹 Full Walkthrough (Desktop)
+[![Watch Desktop Demo](https://img.shields.io/badge/▶_Desktop_Walkthrough-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://github.com/sajjalf23/Socio-A-Social-Media-Platform/raw/main/1_mQLwqi9J.mp4)
+
+### 📱 Quick Demo (Mobile)
+[![Watch Mobile Demo](https://img.shields.io/badge/📱_Mobile_Demo-007ACC?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sajjalf23/Socio-A-Social-Media-Platform/raw/main/M1.mp4)
+
+### 🌐 Live Application
+**🔗 URL:** [https://socio-production.up.railway.app](https://socio-a-social-media-platform-production.up.railway.app/)
 
