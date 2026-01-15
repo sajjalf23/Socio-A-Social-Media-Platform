@@ -119,3 +119,11 @@
 ### 🌐 Live Application
 **🔗 URL:** [https://socio-production.up.railway.app](https://socio-a-social-media-platform-production.up.railway.app/)
 
+## Future Improvements
+
+## I should store the real time notifications os that if a person is not online at that time he should see taht notification
+## Email service should be use for reset password. 
+## More toast notifictions on errors.
+
+
+
