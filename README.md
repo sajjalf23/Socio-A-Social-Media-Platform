@@ -6,41 +6,89 @@
 **Submitted by:** Sajjal Fatima  
 **Submitted to:** Dr. Shuja-ur-Rehman
 
-## 🎥 Live Demo
-
-### 🌐 Live Application
-**🔗 URL:** [https://socio-production.up.railway.app](https://socio-production.up.railway.app)
-
-### 🎬 Quick Demo (Auto-plays)
-![Socio Platform Demo](assets/demo.gif)
-
-*Registration, login, post creation, and real-time interactions*
-
-### 📹 Full Video Walkthrough
-[![Watch Full Demo on YouTube](https://img.shields.io/badge/▶_Watch_Full_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtube.com/watch?v=YOUR_VIDEO_ID)
-
 ## ✨ Features
 
 ### 👤 User Features
-| Feature | Status |
-|---------|--------|
-| ✅ Secure Sign-Up, Login, Logout | Implemented |
-| ✅ View & Edit Profiles | Profile picture upload, Bio, Username |
-| ✅ Create, Edit, Delete Posts | Full CRUD operations |
-| ✅ Like/Dislike Posts | Real-time updates |
-| ✅ Comment System | With reply notifications |
-| ✅ Real-time Notifications | SignalR for instant updates |
-| ✅ Centralized Feed | Personalized content |
-| ✅ User Search | Find and connect with others |
+- **Secure Sign-Up, Login, Logout**
+- **View Profiles**
+- **Edit personal profiles** (Profile picture upload, Bio Description, Username)
+- **Create, edit, and delete posts**
+- **Like / Dislike posts**
+- **Comment on posts**
+- **Delete personal Comments**
+- **Real-time notification** when someone comments on a post to its owner
+- **View single post** with all interactions
+- **Centralized Feed**
+- **Search for other users**
+- **View user profiles**
 
 ### 🛠️ Admin Features
-| Feature | Status |
-|---------|--------|
-| ✅ Dashboard Analytics | Users, Posts, Likes, Comments |
-| ✅ User Management | View, search, permissions |
-| ✅ Content Moderation | Hide/Unhide comments |
-| ✅ User Ban/Unban | Account management |
-| ✅ Activity Monitoring | Real-time tracking |
+#### **Dashboard & Analytics**
+- Overview of platform statistics
+- Activity charts and graphs (# of Users, # of Posts, # of Likes, # of Comments & their Comparisons over time)
+- Platform growth metrics
+
+#### **User Management**
+- View all registered users
+- Search users by various criteria
+- View detailed user information
+- Manage user permissions
+- Ban/UnBan User
+
+#### **Content Moderation**
+- View all comments by specific users
+- User activity monitoring
+- Hide / Unhide comments
+
+## 🏗️ Technical Architecture
+
+### Backend Technologies
+- **ASP.NET Core 8.0** - MVC Framework
+- **Entity Framework Core** - ORM for database operations
+- **Dapper** - For database operations
+- **SQL Server** - Database management
+- **Razor Pages** - Dynamic server-side rendering
+- **Cloudinary** - Media storage and management
+- **MongoDB** - Database
+- **Railway** - Deployment platform
+
+### Frontend Technologies
+- **HTML5/CSS3**
+- **JavaScript**
+- **Bootstrap 5**
+- **Razor Syntax**
+
+## 🧪 Testing (branch = tests)
+- **Unit tests** for components of a controller
+- **Integration tests** for a controller
+
+## 🎓 Concepts Covered
+- **View Components**
+- **Partial Views**
+- **Sections**
+- **Claim-based Authentication**
+- **Policy-Based Authorization**
+- **Resource-Based Authorization**
+- **Session & Cookies**
+- **Async & Sync Operations**
+- **SignalR** (Real-time notifications)
+- **Authentication using Identity**
+- **Partial Uploading (HTML)**
+- **Tag Helpers**
+- **Dapper** (Micro-ORM)
+- **Dependency Injection**
+- **MVC & Repository Pattern**
+
+## 🎥 Live Demo
+
+### 🌐 Live Application
+**🔗 URL:** [https://socio-production.up.railway.app](https://socio-a-social-media-platform-production.up.railway.app/)
+
+### 📹 Full Video Walkthrough (Video Laptop SCreen)
+![Socio Platform Demo](https://github.com/sajjalf23/Socio-A-Social-Media-Platform/blob/main/1_mQLwqi9J.mp4)
+
+### 🎬 Quick Demo (Video mobile SCreen)
+![Socio Platform Demo](https://github.com/sajjalf23/Socio-A-Social-Media-Platform/blob/main/M1.mp4)
 
 ## 🏗️ Technical Architecture
 
@@ -74,4 +122,3 @@
 
 </div>
 
-## 📁 Project Structure
