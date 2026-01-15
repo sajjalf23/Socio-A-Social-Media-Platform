@@ -1,0 +1,5 @@
+[build]
+builder = "railpack"
+
+[deploy]
+startCommand = "ASPNETCORE_URLS=http://0.0.0.0:$PORT dotnet ./out/socio.dll"
