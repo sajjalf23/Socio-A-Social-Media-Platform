@@ -1,19 +1,14 @@
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-
-# Copy project file and restore
-COPY ["socio.csproj", "./"]
-RUN dotnet restore "socio.csproj"
-
-# Copy everything and build
 COPY . .
-RUN dotnet publish "socio.csproj" -c Release -o /app/publish
+RUN dotnet restore
+RUN dotnet publish -c Release -o /app/publish
 
-# Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+# Runtime stage  
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-EXPOSE 3000
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "socio.dll"]
+EXPOSE 3000
 ENV ASPNETCORE_URLS=http://0.0.0.0:3000
+ENTRYPOINT ["dotnet", "YourProjectName.dll"]
