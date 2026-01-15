@@ -1,11 +1,11 @@
 [phases.setup]
-nixPkgs = ["dotnet-sdk_8"]
+nixPkgs = ["icu", "openssl"]
 
 [phases.install]
-cmds = ["dotnet restore socio.csproj"]  # REMOVE extra "socio/"
+cmds = ["dotnet restore"]
 
 [phases.build]
-cmds = ["dotnet publish socio.csproj -c Release -o /app/out"]
+cmds = ["dotnet publish -c Release -o /app/out"]
 
 [start]
-cmd = "cd /app && dotnet /app/out/socio.dll"
+cmd = "ASPNETCORE_URLS=http://0.0.0.0:$PORT dotnet /app/out/socio.dll"
