@@ -1,0 +1,10 @@
+bin/
+obj/
+out/
+.vs/
+.vscode/
+.git/
+*.user
+*.suo
+*.cache
+.DS_Store
